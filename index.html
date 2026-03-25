@@ -3,1395 +3,598 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BESSiq — Battery Storage Intelligence</title>
+<title>BESSiq — Battery Storage Sizing Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-:root {
-  --black:   #07080a;
-  --deep:    #0d0f12;
-  --panel:   #111418;
-  --border:  #1e2228;
-  --border2: #252b33;
-  --amber:   #f0a500;
-  --amber2:  #ffc13d;
-  --amber3:  #fff3cc;
-  --green:   #00d17a;
-  --red:     #ff4d4d;
-  --blue:    #3d9bff;
-  --text:    #c8cdd6;
-  --muted:   #5a6272;
-  --white:   #eef0f4;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--black);
-  color: var(--text);
-  font-family: 'Crimson Pro', Georgia, serif;
-  font-size: 17px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* GRID BACKGROUND */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* AMBIENT GLOW */
-body::after {
-  content: '';
-  position: fixed;
-  top: -200px; left: 50%;
-  transform: translateX(-50%);
-  width: 900px; height: 500px;
-  background: radial-gradient(ellipse, rgba(240,165,0,0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ═══ HEADER ═══════════════════════════════════════════ */
-header {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 48px;
-  height: 64px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(7,8,10,0.92);
-  backdrop-filter: blur(12px);
-}
-
-.logo {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-  text-decoration: none;
-}
-.logo-b { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--amber); letter-spacing: 2px; }
-.logo-ess { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--white); letter-spacing: 2px; }
-.logo-iq { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); letter-spacing: 3px; background: rgba(240,165,0,0.1); padding: 2px 6px; border: 1px solid rgba(240,165,0,0.3); border-radius: 2px; margin-left: 4px; }
-
-.header-right { display: flex; align-items: center; gap: 20px; }
-
-.live-dot {
-  display: flex; align-items: center; gap: 7px;
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  color: var(--green); letter-spacing: 2px; text-transform: uppercase;
-}
-.live-dot::before {
-  content: '';
-  width: 6px; height: 6px;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse-green 2s ease-in-out infinite;
-}
-@keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-
-.btn-plans {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: 2px;
-  color: var(--amber); border: 1px solid rgba(240,165,0,0.4);
-  background: rgba(240,165,0,0.07);
-  padding: 8px 18px; cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none; display: inline-block;
-}
-.btn-plans:hover { background: rgba(240,165,0,0.15); border-color: var(--amber); }
-
-/* ═══ HERO ══════════════════════════════════════════════ */
-.hero {
-  position: relative; z-index: 5;
-  padding: 80px 48px 60px;
-  max-width: 1200px; margin: 0 auto;
-}
-
-.hero-tag {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 4px; color: var(--amber);
-  text-transform: uppercase; margin-bottom: 20px;
-  display: flex; align-items: center; gap: 12px;
-}
-.hero-tag::before { content:''; flex: 0 0 32px; height: 1px; background: var(--amber); }
-
-.hero h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(52px, 8vw, 96px);
-  line-height: 0.92; letter-spacing: 2px;
-  color: var(--white);
-  margin-bottom: 8px;
-}
-.hero h1 span { color: var(--amber); }
-
-.hero-sub {
-  font-size: 19px; font-weight: 300; font-style: italic;
-  color: var(--muted); max-width: 560px;
-  margin: 20px 0 40px;
-  line-height: 1.5;
-}
-
-.hero-stats {
-  display: flex; gap: 40px; flex-wrap: wrap;
-  padding: 24px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 56px;
-}
-.hstat { display: flex; flex-direction: column; gap: 4px; }
-.hstat-n {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px; color: var(--amber); letter-spacing: 1px;
-}
-.hstat-l {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 3px; color: var(--muted);
-  text-transform: uppercase;
-}
-
-/* ═══ MAIN LAYOUT ════════════════════════════════════════ */
-.main {
-  position: relative; z-index: 5;
-  max-width: 1200px; margin: 0 auto;
-  padding: 0 48px 80px;
-  display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: 2px;
-}
-
-/* ═══ PANEL BASE ═════════════════════════════════════════ */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-}
-.panel-head {
-  padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.panel-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: 3px;
-  color: var(--amber); text-transform: uppercase;
-}
-.panel-num {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted);
-}
-.panel-body { padding: 24px; }
-
-/* ═══ FORM ═══════════════════════════════════════════════ */
-.form-grid { display: flex; flex-direction: column; gap: 16px; }
-
-.field { display: flex; flex-direction: column; gap: 7px; }
-.field label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 3px; color: var(--muted);
-  text-transform: uppercase; display: flex; align-items: center; gap: 8px;
-}
-.req { color: var(--amber); }
-
-.field input, .field select {
-  background: var(--deep);
-  border: 1px solid var(--border2);
-  color: var(--white);
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  padding: 11px 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  appearance: none;
-  -webkit-appearance: none;
-}
-.field input:focus, .field select:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(240,165,0,0.08);
-}
-.field select { cursor: pointer; }
-
-.field-hint {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 1px;
-}
-
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* KEY SECTION */
-.key-section {
-  margin-top: 4px;
-  padding: 16px;
-  background: rgba(240,165,0,0.04);
-  border: 1px solid rgba(240,165,0,0.15);
-}
-.key-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 3px;
-  color: var(--amber); text-transform: uppercase;
-  margin-bottom: 8px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.key-link {
-  color: var(--amber); text-decoration: none; font-size: 9px;
-  opacity: 0.7; transition: opacity 0.2s;
-}
-.key-link:hover { opacity: 1; }
-
-/* TOGGLE ROW */
-.toggle-row {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-top: 4px;
-}
-.toggle-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border2);
-  background: var(--deep);
-  cursor: pointer; transition: all 0.2s;
-}
-.toggle-item:hover { border-color: var(--border2); background: rgba(240,165,0,0.04); }
-.toggle-item input { display: none; }
-.toggle-item.active { border-color: rgba(240,165,0,0.5); background: rgba(240,165,0,0.06); }
-.toggle-box {
-  width: 14px; height: 14px; border: 1px solid var(--muted);
-  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.toggle-item.active .toggle-box { border-color: var(--amber); background: rgba(240,165,0,0.2); }
-.toggle-box svg { display: none; }
-.toggle-item.active .toggle-box svg { display: block; }
-.toggle-text { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; line-height: 1.4; }
-.toggle-item.active .toggle-text { color: var(--amber2); }
-
-/* RUN BUTTON */
-.run-btn {
-  width: 100%; padding: 18px;
-  background: var(--amber);
-  color: var(--black);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 20px; letter-spacing: 4px;
-  border: none; cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 8px;
-  position: relative; overflow: hidden;
-}
-.run-btn::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-}
-.run-btn:hover { background: var(--amber2); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(240,165,0,0.3); }
-.run-btn:active { transform: translateY(0); }
-.run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.run-btn .spinner { display: none; }
-.run-btn.loading .btn-text { display: none; }
-.run-btn.loading .spinner { display: inline-block; }
-
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin-ring {
-  display: inline-block; width: 18px; height: 18px;
-  border: 2px solid rgba(0,0,0,0.3);
-  border-top-color: var(--black);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  vertical-align: middle;
-}
-
-/* ═══ RESULTS PANEL ══════════════════════════════════════ */
-.results-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-left: none;
-  min-height: 600px;
-  display: flex; flex-direction: column;
-}
-
-/* EMPTY STATE */
-.empty-state {
-  flex: 1; display: flex;
-  flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 20px; padding: 48px;
-  text-align: center;
-}
-
-.battery-idle {
-  width: 56px; height: 96px;
-  position: relative;
-}
-.bat-body {
-  width: 100%; height: 88px;
-  border: 2px solid var(--border2);
-  border-radius: 4px;
-  position: relative; overflow: hidden;
-}
-.bat-terminal {
-  width: 24px; height: 8px;
-  background: var(--border2);
-  border-radius: 2px 2px 0 0;
-  margin: 0 auto;
-}
-.bat-fill {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 0%;
-  background: linear-gradient(to top, var(--amber) 0%, var(--amber2) 100%);
-  transition: height 1.8s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 0 20px rgba(240,165,0,0.4);
-}
-.bat-pct {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'DM Mono', monospace; font-size: 11px;
-  color: var(--white); font-weight: 500;
-  z-index: 2;
-}
-
-.empty-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px; color: var(--muted); letter-spacing: 2px;
-}
-.empty-sub {
-  font-size: 14px; color: var(--muted); max-width: 280px;
-  font-style: italic; line-height: 1.5;
-}
-
-/* RESULTS */
-.results-body { padding: 28px; flex: 1; display: none; flex-direction: column; gap: 24px; }
-.results-body.visible { display: flex; }
-
-/* VIABILITY BANNER */
-.viability-banner {
-  padding: 16px 20px;
-  border-left: 3px solid var(--amber);
-  background: rgba(240,165,0,0.06);
-  display: flex; align-items: flex-start; gap: 16px;
-}
-.viability-banner.moderate { border-color: var(--blue); background: rgba(61,155,255,0.06); }
-.viability-banner.marginal { border-color: var(--muted); background: rgba(90,98,114,0.06); }
-.vib-verdict {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px; letter-spacing: 2px;
-  color: var(--amber);
-}
-.viability-banner.moderate .vib-verdict { color: var(--blue); }
-.viability-banner.marginal .vib-verdict { color: var(--muted); }
-.vib-note { font-size: 14px; color: var(--text); line-height: 1.5; font-style: italic; }
-
-/* METRIC GRID */
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
-}
-.metric {
-  background: var(--deep);
-  padding: 18px 16px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.metric-val {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px; line-height: 1;
-  color: var(--white);
-}
-.metric-val.amber { color: var(--amber); }
-.metric-val.green { color: var(--green); }
-.metric-val.blue { color: var(--blue); }
-.metric-unit {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 2px;
-}
-.metric-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 8px; color: var(--muted);
-  letter-spacing: 2px; text-transform: uppercase;
-  margin-top: 2px;
-}
-
-/* BATTERY VISUAL */
-.battery-visual {
-  display: flex; gap: 20px; align-items: center;
-  padding: 20px;
-  background: var(--deep);
-  border: 1px solid var(--border);
-}
-.batt-wrap { flex-shrink: 0; }
-.batt-info { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.batt-row {
-  display: flex; justify-content: space-between;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-.batt-row:last-child { border-bottom: none; padding-bottom: 0; }
-.batt-row-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
-.batt-row-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--white); font-weight: 500; }
-.batt-row-val .sub { font-size: 9px; color: var(--muted); margin-left: 4px; }
-
-/* SCENARIO TABLE */
-.scenario-wrap { overflow-x: auto; }
-.scenario-table { width: 100%; border-collapse: collapse; }
-.scenario-table th {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 3px; color: var(--muted);
-  text-transform: uppercase; padding: 10px 14px;
-  text-align: left; border-bottom: 1px solid var(--border);
-  background: var(--black);
-}
-.scenario-table td {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px; color: var(--text);
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.scenario-table tr.mid-row td { background: rgba(240,165,0,0.04); }
-.scenario-table tr.mid-row td:first-child { border-left: 2px solid var(--amber); }
-.tag-mid {
-  background: var(--amber); color: var(--black);
-  font-size: 7px; padding: 2px 5px; letter-spacing: 2px;
-  vertical-align: middle; margin-left: 6px;
-}
-.val-green { color: var(--green); }
-.val-amber { color: var(--amber); }
-.val-blue { color: var(--blue); }
-
-/* SAVINGS BREAKDOWN */
-.savings-bars { display: flex; flex-direction: column; gap: 10px; }
-.sbar-row { display: flex; flex-direction: column; gap: 5px; }
-.sbar-head { display: flex; justify-content: space-between; }
-.sbar-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
-.sbar-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--white); }
-.sbar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.sbar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1.4s cubic-bezier(0.4,0,0.2,1); }
-.sbar-fill.demand { background: var(--amber); }
-.sbar-fill.tou { background: var(--blue); }
-.sbar-fill.solar { background: var(--green); }
-.sbar-fill.uplift { background: #a78bfa; }
-
-/* SECTION HEADER */
-.sec-head {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 3px; color: var(--amber);
-  text-transform: uppercase;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 14px;
-  display: flex; align-items: center; gap: 10px;
-}
-.sec-head::after { content:''; flex: 1; height: 1px; background: var(--border); }
-
-/* ITC BADGE */
-.itc-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.itc-badge {
-  padding: 8px 14px;
-  border: 1px solid var(--border2);
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; color: var(--muted);
-  display: flex; align-items: center; gap: 8px;
-}
-.itc-badge.active { border-color: rgba(240,165,0,0.4); color: var(--amber2); background: rgba(240,165,0,0.06); }
-.itc-rate {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px; color: var(--amber); letter-spacing: 1px;
-}
-
-/* SOURCES */
-.sources-collapse { margin-top: 8px; }
-.sources-toggle {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: 2px; color: var(--muted);
-  cursor: pointer; background: none; border: none;
-  padding: 0; display: flex; align-items: center; gap: 6px;
-  transition: color 0.2s;
-}
-.sources-toggle:hover { color: var(--amber); }
-.sources-body { display: none; margin-top: 12px; }
-.sources-body.open { display: block; }
-.source-item {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 1px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--border);
-  line-height: 1.5;
-}
-.source-item:last-child { border-bottom: none; }
-
-/* ERROR */
-.error-box {
-  padding: 16px 20px;
-  border-left: 3px solid var(--red);
-  background: rgba(255,77,77,0.06);
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; color: var(--red);
-  line-height: 1.6;
-  display: none;
-}
-
-/* ═══ PLANS OVERLAY ══════════════════════════════════════ */
-.overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(7,8,10,0.92);
-  z-index: 100; align-items: center; justify-content: center;
-  backdrop-filter: blur(8px);
-}
-.overlay.open { display: flex; }
-
-.plans-modal {
-  background: var(--panel);
-  border: 1px solid var(--border2);
-  width: 90%; max-width: 860px;
-  max-height: 90vh; overflow-y: auto;
-  position: relative;
-}
-
-.modal-head {
-  padding: 28px 32px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.modal-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px; letter-spacing: 3px; color: var(--white);
-}
-.modal-close {
-  background: none; border: 1px solid var(--border2);
-  color: var(--muted); width: 36px; height: 36px;
-  cursor: pointer; font-size: 18px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.modal-close:hover { border-color: var(--amber); color: var(--amber); }
-
-.plans-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 1px; background: var(--border);
-  margin: 0;
-}
-.plan-col {
-  background: var(--panel);
-  padding: 28px 24px;
-  display: flex; flex-direction: column; gap: 16px;
-  position: relative;
-}
-.plan-col.featured {
-  background: rgba(240,165,0,0.04);
-}
-.plan-tag {
-  font-family: 'DM Mono', monospace;
-  font-size: 8px; letter-spacing: 4px; color: var(--muted);
-  text-transform: uppercase;
-}
-.plan-col.featured .plan-tag { color: var(--amber); }
-.plan-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 36px; letter-spacing: 2px; color: var(--white);
-}
-.plan-price {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px; color: var(--amber);
-}
-.plan-features { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.pf {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; color: var(--muted); letter-spacing: 1px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: flex-start; gap: 8px;
-  line-height: 1.4;
-}
-.pf::before { content: '→'; color: var(--amber); flex-shrink: 0; }
-.plan-cta {
-  display: block; text-align: center;
-  padding: 14px;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: 3px;
-  text-decoration: none; text-transform: uppercase;
-  border: 1px solid var(--border2);
-  color: var(--muted);
-  transition: all 0.2s;
-}
-.plan-cta:hover { border-color: var(--amber); color: var(--amber); }
-.plan-col.featured .plan-cta {
-  background: var(--amber); color: var(--black);
-  border-color: var(--amber); font-weight: bold;
-}
-.plan-col.featured .plan-cta:hover { background: var(--amber2); }
-
-.ultra-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 8px; letter-spacing: 3px;
-  background: linear-gradient(135deg, var(--amber), var(--amber2));
-  color: var(--black); padding: 3px 8px;
-  text-transform: uppercase; display: inline-block;
-  margin-bottom: 4px;
-}
-
-.modal-footer {
-  padding: 20px 32px;
-  border-top: 1px solid var(--border);
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 2px;
-  text-align: center;
-}
-.modal-footer a { color: var(--amber); text-decoration: none; }
-
-/* ═══ FOOTER ═════════════════════════════════════════════ */
-footer {
-  position: relative; z-index: 5;
-  border-top: 1px solid var(--border);
-  padding: 24px 48px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px;
-}
-.foot-left {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 2px;
-}
-.foot-left span { color: var(--amber); }
-.foot-links { display: flex; gap: 20px; }
-.foot-links a {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 2px;
-  text-decoration: none; text-transform: uppercase;
-  transition: color 0.2s;
-}
-.foot-links a:hover { color: var(--amber); }
-
-.disclaimer {
-  position: relative; z-index: 5;
-  padding: 0 48px 32px;
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; color: var(--muted); letter-spacing: 1px;
-  max-width: 900px; line-height: 1.8;
-}
-
-/* ANIMATIONS */
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(16px); }
-  to   { opacity:1; transform: translateY(0); }
-}
-.fade-up { animation: fadeUp 0.5s ease both; }
-.fade-up-1 { animation-delay: 0.05s; }
-.fade-up-2 { animation-delay: 0.10s; }
-.fade-up-3 { animation-delay: 0.15s; }
-.fade-up-4 { animation-delay: 0.20s; }
-.fade-up-5 { animation-delay: 0.25s; }
-.fade-up-6 { animation-delay: 0.30s; }
-
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  header { padding: 0 20px; }
-  .hero { padding: 48px 20px 40px; }
-  .main { grid-template-columns: 1fr; padding: 0 20px 60px; }
-  .results-panel { border-left: 1px solid var(--border); border-top: none; }
-  .metric-grid { grid-template-columns: repeat(2,1fr); }
-  .plans-grid { grid-template-columns: 1fr; }
-  footer, .disclaimer { padding-left: 20px; padding-right: 20px; }
+:root{--ink:#0a0a0a;--ink2:#1a1a1a;--ink3:#2e2e2e;--mid:#6b6b6b;--rule:#d4d4d4;--rule2:#ebebeb;--paper:#f9f8f5;--white:#ffffff;--red:#c0392b;--red2:#e74c3c;--green:#1a6b3a;--blue:#1a3f6b;--amber:#b8860b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--ink);font-family:'Lora',Georgia,serif;overflow-x:hidden;min-height:100vh}
+.masthead{border-bottom:3px solid var(--ink);padding:0 56px;display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;height:72px}
+.mast-left{display:flex;align-items:center;gap:16px;border-right:1px solid var(--rule)}
+.mast-left a{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--mid);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.mast-left a:hover{color:var(--ink)}
+.mast-sep{color:var(--rule)}
+.logo-wrap{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:0 32px}
+.logo-main{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;letter-spacing:6px;color:var(--ink);text-transform:uppercase}
+.logo-main span{color:var(--red)}
+.logo-sub{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:5px;color:var(--mid);text-transform:uppercase}
+.mast-right{display:flex;align-items:center;justify-content:flex-end;gap:20px;border-left:1px solid var(--rule)}
+.live-ind{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--green);display:flex;align-items:center;gap:6px}
+.live-ind::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-access{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--white);background:var(--ink);border:none;padding:10px 20px;cursor:pointer;transition:background .2s;text-decoration:none;display:inline-flex;align-items:center}
+.btn-access:hover{background:var(--red)}
+.issue-line{background:var(--ink);color:var(--white);padding:7px 56px;display:flex;gap:32px;align-items:center;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;overflow:hidden}
+.issue-item{white-space:nowrap;display:flex;align-items:center;gap:8px}
+.issue-item::before{content:'◆';color:var(--red);font-size:6px}
+.marquee-wrap{flex:1;overflow:hidden}
+.marquee-inner{display:flex;animation:marquee 28s linear infinite;white-space:nowrap}
+.marquee-inner span{padding:0 40px}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.hero{display:grid;grid-template-columns:1fr 1fr;min-height:400px;border-bottom:2px solid var(--ink)}
+.hero-left{padding:56px;border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:space-between}
+.hero-kicker{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:20px}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,64px);font-weight:900;line-height:1.0;color:var(--ink)}
+.hero-h1 em{font-style:italic;color:var(--red)}
+.hero-deck{font-size:16px;line-height:1.7;color:var(--mid);max-width:480px;font-style:italic;margin-top:20px}
+.hero-byline{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--rule);text-transform:uppercase;margin-top:32px;border-top:1px solid var(--rule2);padding-top:16px}
+.hero-byline span{color:var(--mid)}
+.hero-right{background:var(--paper);padding:56px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.hero-right::before{content:'BESS';position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-size:200px;font-weight:900;color:rgba(0,0,0,.03);line-height:1;user-select:none;pointer-events:none}
+.stat-item{display:grid;grid-template-columns:1fr auto;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--rule2)}
+.stat-item:first-child{border-top:1px solid var(--rule2)}
+.stat-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--mid);text-transform:uppercase}
+.stat-val{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--ink)}
+.stat-val small{font-size:13px;font-weight:400;color:var(--mid);margin-left:4px}
+.workspace{display:grid;grid-template-columns:380px 1fr;min-height:70vh;border-bottom:2px solid var(--ink)}
+.form-col{border-right:1px solid var(--rule);display:flex;flex-direction:column}
+.col-head{padding:18px 32px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between}
+.col-head-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--ink);text-transform:uppercase}
+.col-num{font-family:'Space Mono',monospace;font-size:8px;color:var(--rule)}
+.form-inner{padding:24px 32px;flex:1;display:flex;flex-direction:column;gap:18px}
+.f{display:flex;flex-direction:column;gap:7px}
+.f label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--mid);text-transform:uppercase}
+.req{color:var(--red)}
+.f input,.f select{border:1px solid var(--rule);border-bottom:2px solid var(--ink);background:var(--white);color:var(--ink);font-family:'Space Mono',monospace;font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none;border-radius:0}
+.f input:focus,.f select:focus{border-bottom-color:var(--red)}
+.f-hint{font-family:'Space Mono',monospace;font-size:8px;color:var(--rule);letter-spacing:1px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.key-box{padding:14px;background:var(--paper);border:1px solid var(--rule2);border-left:3px solid var(--ink)}
+.key-box-head{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--ink);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.key-box-head a{color:var(--red);text-decoration:none;font-size:8px;transition:opacity .2s}
+.key-box-head a:hover{opacity:.7}
+.key-note{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.7;margin-top:8px}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tog{padding:10px 12px;border:1px solid var(--rule2);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px;background:var(--white)}
+.tog:hover{border-color:var(--rule)}
+.tog.on{border-color:var(--ink);background:var(--paper)}
+.tog-check{width:14px;height:14px;border:1px solid var(--rule);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.tog.on .tog-check{border-color:var(--ink);background:var(--ink)}
+.tog-check svg{display:none}
+.tog.on .tog-check svg{display:block}
+.tog-text{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.5}
+.tog.on .tog-text{color:var(--ink)}
+.run-wrap{padding:0 32px 28px}
+.run-btn{width:100%;padding:18px;background:var(--ink);color:var(--white);border:none;cursor:pointer;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background .2s;position:relative}
+.run-btn:hover:not(:disabled){background:var(--red)}
+.run-btn:disabled{opacity:.4;cursor:not-allowed}
+.run-btn .btext{display:block}
+.run-btn .bspin{display:none;align-items:center;justify-content:center;gap:10px}
+.run-btn.loading .btext{display:none}
+.run-btn.loading .bspin{display:flex}
+.ring{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-strip{margin:0 32px 16px;padding:12px 16px;background:#fef2f2;border-left:3px solid var(--red);font-family:'Space Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;line-height:1.6;display:none}
+.results-col{display:flex;flex-direction:column;min-height:600px}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:64px;text-align:center}
+.empty-rule{width:1px;height:72px;background:linear-gradient(to bottom,transparent,var(--rule),transparent);margin:0 auto}
+.bat-cap{width:18px;height:6px;border:2px solid var(--rule2);border-bottom:none;border-radius:2px 2px 0 0;margin:0 auto}
+.bat-idle{width:44px;height:80px;border:2px solid var(--rule2);border-radius:3px;margin:0 auto;position:relative;overflow:hidden}
+.bat-level{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--rule2),#ccc);transition:height .8s ease}
+.bat-pct-idle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:9px;color:var(--mid)}
+.empty-h{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;font-style:italic;color:var(--rule)}
+.empty-p{font-family:'Space Mono',monospace;font-size:9px;color:var(--rule);letter-spacing:2px;text-transform:uppercase;max-width:240px;line-height:1.8}
+.results-body{display:none;flex-direction:column}
+.results-body.on{display:flex}
+.res-head{padding:18px 40px;border-bottom:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between;background:var(--paper)}
+.res-head-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);text-transform:uppercase}
+.viab-pill{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:6px 14px;border:1px solid}
+.viab-pill.strong{border-color:var(--green);color:var(--green);background:rgba(26,107,58,.05)}
+.viab-pill.moderate{border-color:var(--blue);color:var(--blue);background:rgba(26,63,107,.05)}
+.viab-pill.marginal{border-color:var(--mid);color:var(--mid)}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--ink)}
+.sr-cell{padding:24px 20px;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:6px}
+.sr-cell:last-child{border-right:none}
+.sr-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#fff;line-height:1}
+.sr-num.grn{color:#6ee7a0}
+.sr-num.blu{color:#7ab8ff}
+.sr-unit{font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.3);letter-spacing:2px}
+.sr-label{font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.res-section{padding:28px 40px;border-bottom:1px solid var(--rule2)}
+.res-section:last-child{border-bottom:none}
+.rs-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:4px;color:var(--mid);text-transform:uppercase;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between}
+.rs-cite{font-size:7px;color:var(--rule);letter-spacing:1px}
+.sizing-display{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start}
+.bat-result{display:flex;flex-direction:column;align-items:center;gap:4px}
+.bat-r-cap{width:22px;height:6px;background:var(--rule2);border-radius:2px 2px 0 0;margin:0 auto}
+.bat-r-body{width:56px;height:100px;border:2px solid var(--rule);border-radius:3px;position:relative;overflow:hidden}
+.bat-r-fill{position:absolute;bottom:0;left:0;right:0;height:0%;transition:height 1.8s cubic-bezier(.4,0,.2,1);background:linear-gradient(to top,var(--ink),var(--ink3))}
+.bat-r-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;color:#fff;z-index:2;mix-blend-mode:difference}
+.bat-r-label{font-family:'Space Mono',monospace;font-size:7px;color:var(--mid);letter-spacing:2px;text-align:center;margin-top:4px}
+.sizing-specs{display:flex;flex-direction:column}
+.spec-row{display:grid;grid-template-columns:1fr auto;padding:11px 0;border-bottom:1px solid var(--rule2);align-items:baseline}
+.spec-row:last-child{border-bottom:none}
+.spec-k{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:2px;text-transform:uppercase}
+.spec-v{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink)}
+.spec-v small{font-size:11px;font-weight:400;color:var(--mid);margin-left:3px}
+.sav-list{display:flex;flex-direction:column;gap:16px}
+.sav-item{display:flex;flex-direction:column;gap:6px}
+.sav-head{display:flex;justify-content:space-between;align-items:baseline}
+.sav-label{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:2px;text-transform:uppercase}
+.sav-val{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink)}
+.sav-track{height:3px;background:var(--rule2)}
+.sav-fill{height:100%;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.sav-fill.d{background:var(--ink)}
+.sav-fill.t{background:var(--blue)}
+.sav-fill.u{background:var(--amber)}
+.scen-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scen-table{width:100%;border-collapse:collapse;min-width:540px}
+.scen-table th{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);padding:10px 14px;text-align:right;border-bottom:2px solid var(--ink);background:var(--paper)}
+.scen-table th:first-child{text-align:left}
+.scen-table td{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink3);padding:13px 14px;text-align:right;border-bottom:1px solid var(--rule2)}
+.scen-table td:first-child{text-align:left;font-weight:700}
+.scen-table tr.mid-row{background:var(--paper)}
+.scen-table tr.mid-row td:first-child{border-left:3px solid var(--ink)}
+.rec-badge{display:inline-block;background:var(--ink);color:var(--white);font-size:6px;padding:2px 5px;letter-spacing:2px;vertical-align:middle;margin-left:5px}
+.td-g{color:var(--green)}
+.td-b{color:var(--blue)}
+.itc-display{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.itc-big{font-family:'Playfair Display',serif;font-size:68px;font-weight:900;line-height:1;color:var(--ink)}
+.itc-big small{font-size:24px}
+.itc-breakdown{flex:1;display:flex;flex-direction:column;gap:4px;padding-top:8px;min-width:200px}
+.itc-line{display:flex;gap:10px;align-items:center;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--mid);padding:8px 0;border-bottom:1px solid var(--rule2)}
+.itc-line.active{color:var(--ink)}
+.itc-dot{width:8px;height:8px;border-radius:50%;background:var(--rule2);flex-shrink:0}
+.itc-line.active .itc-dot{background:var(--ink)}
+.itc-amt{margin-left:auto;font-weight:700}
+.viab-note{padding:18px 22px;background:var(--paper);border-left:3px solid var(--ink);font-style:italic;font-size:15px;color:var(--ink3);line-height:1.6}
+.src-toggle{background:none;border:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);display:flex;align-items:center;gap:6px;padding:0;transition:color .2s}
+.src-toggle:hover{color:var(--ink)}
+.src-body{display:none;margin-top:14px}
+.src-body.open{display:block}
+.src-row{padding:7px 0;border-bottom:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);line-height:1.8;letter-spacing:.5px}
+.src-row span{color:var(--ink);font-weight:700}
+.src-row:last-child{border-bottom:none}
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,10,10,.85);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.modal{background:var(--white);border:2px solid var(--ink);width:92%;max-width:900px;max-height:92vh;overflow-y:auto}
+.modal-top{padding:26px 36px 18px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between}
+.modal-h{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;letter-spacing:2px}
+.modal-x{background:none;border:1px solid var(--rule);width:36px;height:36px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-x:hover{border-color:var(--ink);background:var(--ink);color:var(--white)}
+.modal-note{padding:14px 36px;background:var(--paper);border-bottom:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);line-height:2;text-transform:uppercase}
+.modal-note strong{color:var(--red)}
+.plans-cols{display:grid;grid-template-columns:repeat(3,1fr)}
+.plan{padding:28px;border-right:1px solid var(--rule2);display:flex;flex-direction:column;gap:14px}
+.plan:last-child{border-right:none}
+.plan.pro{background:var(--paper)}
+.plan-tier{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:4px;color:var(--mid);text-transform:uppercase}
+.plan.pro .plan-tier{color:var(--red)}
+.plan-name{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--ink)}
+.plan-price{font-family:'Space Mono',monospace;font-size:9px;color:var(--mid);letter-spacing:1px;border-top:1px solid var(--rule2);padding-top:10px}
+.plan-feats{flex:1;display:flex;flex-direction:column;gap:6px}
+.pf{display:flex;gap:8px;align-items:flex-start;font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.5;padding:6px 0;border-bottom:1px solid var(--rule2)}
+.pf::before{content:'→';color:var(--ink);flex-shrink:0;margin-top:1px}
+.plan-btn{display:block;text-align:center;padding:12px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;border:1px solid var(--rule);color:var(--mid);transition:all .2s}
+.plan-btn:hover{border-color:var(--ink);color:var(--ink)}
+.plan.pro .plan-btn{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.plan.pro .plan-btn:hover{background:var(--red);border-color:var(--red)}
+.white-only{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--red);text-transform:uppercase;padding:3px 7px;border:1px solid var(--red);display:inline-block;margin-bottom:3px}
+.modal-foot{padding:16px 36px;border-top:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;text-align:center}
+.modal-foot a{color:var(--red);text-decoration:none}
+.site-foot{padding:22px 56px;border-top:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.sf-left{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px}
+.sf-left strong{color:var(--ink)}
+.sf-links{display:flex;gap:18px}
+.sf-links a{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+.sf-links a:hover{color:var(--red)}
+.disclaimer{padding:0 56px 24px;font-family:'Space Mono',monospace;font-size:7px;color:var(--rule);letter-spacing:1px;line-height:2;max-width:900px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ani{animation:fadeIn .4s ease both}
+.ani-1{animation-delay:.04s}.ani-2{animation-delay:.09s}.ani-3{animation-delay:.14s}
+.ani-4{animation-delay:.19s}.ani-5{animation-delay:.24s}.ani-6{animation-delay:.29s}
+@media(max-width:880px){
+  .masthead{padding:0 16px;grid-template-columns:auto 1fr auto}
+  .mast-left{display:none}
+  .hero{grid-template-columns:1fr}
+  .hero-right{display:none}
+  .workspace{grid-template-columns:1fr}
+  .form-col{border-right:none;border-bottom:1px solid var(--rule)}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .plans-cols{grid-template-columns:1fr}
+  .plan{border-right:none;border-bottom:1px solid var(--rule2)}
+  .site-foot,.disclaimer{padding-left:16px;padding-right:16px}
+  .res-section{padding:20px 18px}
 }
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
-<header>
-  <a class="logo" href="#">
-    <span class="logo-b">B</span><span class="logo-ess">ESS</span>
-    <span class="logo-iq">IQ</span>
-  </a>
-  <div class="header-right">
-    <div class="live-dot">API LIVE</div>
-    <button class="btn-plans" onclick="openPlans()">PLANS & ACCESS</button>
+<header class="masthead">
+  <nav class="mast-left">
+    <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
+    <span class="mast-sep">·</span>
+    <a href="https://solartruth.app" target="_blank">Portfolio</a>
+    <span class="mast-sep">·</span>
+    <a href="mailto:support@solartruth.app">Contact</a>
+  </nav>
+  <div class="logo-wrap">
+    <div class="logo-main">BESS<span>iq</span></div>
+    <div class="logo-sub">Battery Storage Sizing Intelligence</div>
+  </div>
+  <div class="mast-right">
+    <div class="live-ind">API LIVE</div>
+    <button class="btn-access" onclick="openPlans()">Plans &amp; Access</button>
   </div>
 </header>
-
-<!-- HERO -->
+<div class="issue-line">
+  <div class="issue-item">NREL ATB 2024</div>
+  <div class="issue-item">PNNL-33283</div>
+  <div class="marquee-wrap"><div class="marquee-inner">
+    <span>IRA 2022 §48E ITC STACKING TO 50%</span>
+    <span>LOAD DURATION CURVE SIZING · NEUBAUER &amp; SIMPSON 2015</span>
+    <span>AC-AC RTE PER ATB2024b · COLE &amp; KARMAKAR 2023</span>
+    <span>OPENEI UTILITY RATE DATABASE · 26 US STATES</span>
+    <span>LFP · NMC · LFP LONG-DURATION · 3 CHEMISTRIES</span>
+    <span>IRA 2022 §48E ITC STACKING TO 50%</span>
+    <span>LOAD DURATION CURVE SIZING · NEUBAUER &amp; SIMPSON 2015</span>
+    <span>AC-AC RTE PER ATB2024b · COLE &amp; KARMAKAR 2023</span>
+    <span>OPENEI UTILITY RATE DATABASE · 26 US STATES</span>
+    <span>LFP · NMC · LFP LONG-DURATION · 3 CHEMISTRIES</span>
+  </div></div>
+  <div class="issue-item">V2.0</div>
+</div>
 <section class="hero">
-  <div class="hero-tag">Battery Economics & Storage Sizing Intelligence</div>
-  <h1>SIZE YOUR<br><span>STORAGE.</span><br>DEFEND YOUR<br>NUMBERS.</h1>
-  <p class="hero-sub">NREL ATB 2024 CAPEX. PNNL-validated LCOS. IRA 2022 ITC stacking to 50%. Every figure cited to its primary source.</p>
-  <div class="hero-stats">
-    <div class="hstat"><div class="hstat-n">3</div><div class="hstat-l">ATB Scenarios</div></div>
-    <div class="hstat"><div class="hstat-n">14</div><div class="hstat-l">Primary Sources</div></div>
-    <div class="hstat"><div class="hstat-n">50%</div><div class="hstat-l">Max ITC Credit</div></div>
-    <div class="hstat"><div class="hstat-n">26</div><div class="hstat-l">US States</div></div>
-    <div class="hstat"><div class="hstat-n">3</div><div class="hstat-l">Battery Chemistries</div></div>
+  <div class="hero-left">
+    <div>
+      <div class="hero-kicker">Commercial &amp; Industrial · Battery Storage Economics</div>
+      <h1 class="hero-h1">Size your<br>storage.<br><em>Defend your<br>numbers.</em></h1>
+      <p class="hero-deck">Every figure cited to its primary government source. NREL CAPEX. PNNL LCOS. IRA 2022 ITC. No black boxes.</p>
+    </div>
+    <div class="hero-byline">Powered by Solar + BESS Sizing API · <span>rapidapi.com/user/bethelnedi</span></div>
+  </div>
+  <div class="hero-right">
+    <div>
+      <div class="stat-item"><span class="stat-label">ATB Cost Scenarios</span><span class="stat-val">3 <small>scenarios</small></span></div>
+      <div class="stat-item"><span class="stat-label">Max ITC Credit</span><span class="stat-val">50<small>%</small></span></div>
+      <div class="stat-item"><span class="stat-label">Primary Sources</span><span class="stat-val">14 <small>citations</small></span></div>
+      <div class="stat-item"><span class="stat-label">Battery Chemistries</span><span class="stat-val">3 <small>types</small></span></div>
+      <div class="stat-item"><span class="stat-label">States Covered</span><span class="stat-val">26 <small>US states</small></span></div>
+    </div>
   </div>
 </section>
-
-<!-- MAIN GRID -->
-<div class="main">
-
-  <!-- INPUT PANEL -->
-  <div class="panel">
-    <div class="panel-head">
-      <span class="panel-title">Site Parameters</span>
-      <span class="panel-num">01 / INPUT</span>
-    </div>
-    <div class="panel-body">
-      <div class="form-grid">
-
-        <div class="field-row">
-          <div class="field">
-            <label>Peak Demand <span class="req">*</span></label>
-            <input type="number" id="peak" placeholder="e.g. 250" min="10" max="50000" value="250">
-            <span class="field-hint">kW</span>
-          </div>
-          <div class="field">
-            <label>US State <span class="req">*</span></label>
-            <select id="state">
-              <option value="CA">California</option>
-              <option value="NY">New York</option>
-              <option value="MA">Massachusetts</option>
-              <option value="NJ">New Jersey</option>
-              <option value="IL">Illinois</option>
-              <option value="MD">Maryland</option>
-              <option value="CT">Connecticut</option>
-              <option value="RI">Rhode Island</option>
-              <option value="PA">Pennsylvania</option>
-              <option value="AZ">Arizona</option>
-              <option value="FL">Florida</option>
-              <option value="CO">Colorado</option>
-              <option value="NV">Nevada</option>
-              <option value="TX" selected>Texas</option>
-              <option value="GA">Georgia</option>
-              <option value="NC">North Carolina</option>
-              <option value="VA">Virginia</option>
-              <option value="OH">Ohio</option>
-              <option value="MI">Michigan</option>
-              <option value="MN">Minnesota</option>
-              <option value="WI">Wisconsin</option>
-              <option value="WA">Washington</option>
-              <option value="OR">Oregon</option>
-              <option value="ID">Idaho</option>
-              <option value="MT">Montana</option>
-              <option value="UT">Utah</option>
-            </select>
-          </div>
+<div class="workspace">
+  <div class="form-col">
+    <div class="col-head"><span class="col-head-title">Site Parameters</span><span class="col-num">§ 01</span></div>
+    <div class="form-inner">
+      <div class="f-row">
+        <div class="f">
+          <label>Peak Demand <span class="req">*</span></label>
+          <input id="peak" type="number" value="250" min="10" max="50000">
+          <span class="f-hint">kW</span>
         </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label>Electricity Rate <span class="req">*</span></label>
-            <input type="number" id="rate" placeholder="0.085" step="0.001" min="0.01" max="2" value="0.085">
-            <span class="field-hint">$/kWh blended</span>
-          </div>
-          <div class="field">
-            <label>Annual Consumption</label>
-            <input type="number" id="consumption" placeholder="2800000" value="2800000">
-            <span class="field-hint">kWh/year (Pro)</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Battery Chemistry</label>
-          <select id="chemistry">
-            <option value="lfp" selected>LFP — Lithium Iron Phosphate (4h)</option>
-            <option value="nmc">NMC — Nickel Manganese Cobalt (4h)</option>
-            <option value="lfp_long">LFP Long-Duration (6–8h)</option>
+        <div class="f">
+          <label>State <span class="req">*</span></label>
+          <select id="state">
+            <option value="CA">California</option><option value="NY">New York</option>
+            <option value="MA">Massachusetts</option><option value="NJ">New Jersey</option>
+            <option value="IL">Illinois</option><option value="MD">Maryland</option>
+            <option value="CT">Connecticut</option><option value="RI">Rhode Island</option>
+            <option value="PA">Pennsylvania</option><option value="AZ">Arizona</option>
+            <option value="FL">Florida</option><option value="CO">Colorado</option>
+            <option value="NV">Nevada</option><option value="TX" selected>Texas</option>
+            <option value="GA">Georgia</option><option value="NC">North Carolina</option>
+            <option value="VA">Virginia</option><option value="OH">Ohio</option>
+            <option value="MI">Michigan</option><option value="MN">Minnesota</option>
+            <option value="WI">Wisconsin</option><option value="WA">Washington</option>
+            <option value="OR">Oregon</option><option value="ID">Idaho</option>
+            <option value="MT">Montana</option><option value="UT">Utah</option>
           </select>
         </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label>Discharge Hours</label>
-            <input type="number" id="hours" placeholder="4.0" step="0.5" min="1" max="8" value="4.0">
-            <span class="field-hint">1–8 hours</span>
-          </div>
-          <div class="field">
-            <label>Shave Target</label>
-            <input type="number" id="shave" placeholder="0.20" step="0.05" min="0.05" max="0.50" value="0.20">
-            <span class="field-hint">fraction of peak</span>
-          </div>
-        </div>
-
-        <!-- KEY -->
-        <div class="key-section">
-          <div class="key-label">
-            Pro API Key
-            <a class="key-link" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">GET KEY →</a>
-          </div>
-          <div class="field">
-            <input type="password" id="apikey" placeholder="Paste RapidAPI key for Pro features">
-          </div>
-          <div class="field-hint" style="margin-top:6px">Without key: quick sizing · With Pro key: all 3 ATB scenarios + NPV/IRR + ITC stacking</div>
-        </div>
-
-        <!-- ITC TOGGLES (Pro) -->
-        <div class="field">
-          <label>IRA 2022 ITC Adders <span style="color:var(--muted)">(Pro)</span></label>
-          <div class="toggle-row">
-            <div class="toggle-item" id="tog-dc" onclick="toggleItem(this)">
-              <input type="checkbox" id="domestic_content">
-              <div class="toggle-box">
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                  <path d="M1 3.5L3.5 6L8 1" stroke="#f0a500" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span class="toggle-text">Domestic Content +10%</span>
-            </div>
-            <div class="toggle-item" id="tog-ec" onclick="toggleItem(this)">
-              <input type="checkbox" id="energy_community">
-              <div class="toggle-box">
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                  <path d="M1 3.5L3.5 6L8 1" stroke="#f0a500" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span class="toggle-text">Energy Community +10%</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="run-btn" id="runBtn" onclick="runAnalysis()">
-          <span class="btn-text">RUN ANALYSIS</span>
-          <span class="spinner"><span class="spin-ring"></span></span>
-        </button>
-
-        <div class="error-box" id="errorBox"></div>
-
       </div>
+      <div class="f-row">
+        <div class="f">
+          <label>Electricity Rate <span class="req">*</span></label>
+          <input id="rate" type="number" value="0.085" step="0.001" min="0.01" max="2">
+          <span class="f-hint">$/kWh blended</span>
+        </div>
+        <div class="f">
+          <label>Annual Consumption</label>
+          <input id="cons" type="number" value="2800000">
+          <span class="f-hint">kWh/yr · Pro</span>
+        </div>
+      </div>
+      <div class="f">
+        <label>Battery Chemistry</label>
+        <select id="chem">
+          <option value="lfp" selected>LFP — Lithium Iron Phosphate (4h)</option>
+          <option value="nmc">NMC — Nickel Manganese Cobalt (4h)</option>
+          <option value="lfp_long">LFP Long-Duration (6–8h)</option>
+        </select>
+      </div>
+      <div class="f-row">
+        <div class="f">
+          <label>Discharge Hours</label>
+          <input id="hrs" type="number" value="4.0" step="0.5" min="1" max="8">
+          <span class="f-hint">1–8 hours</span>
+        </div>
+        <div class="f">
+          <label>Shave Target</label>
+          <input id="shave" type="number" value="0.20" step="0.05" min="0.05" max="0.50">
+          <span class="f-hint">fraction of peak</span>
+        </div>
+      </div>
+      <div class="key-box">
+        <div class="key-box-head">
+          RapidAPI Key <span style="color:var(--red);font-size:7px">REQUIRED</span>
+          <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get key →</a>
+        </div>
+        <div class="f">
+          <input id="apikey" type="password" placeholder="Paste your RapidAPI key here">
+        </div>
+        <div class="key-note">Free key = quick sizing · Pro key = all 3 ATB scenarios + NPV/IRR + ITC stacking. RapidAPI requires a key even on the free tier to route requests.</div>
+      </div>
+      <div class="f">
+        <label>IRA 2022 ITC Adders <span style="color:var(--rule)">Pro</span></label>
+        <div class="toggle-grid">
+          <div class="tog" id="tog-dc" onclick="this.classList.toggle('on')">
+            <div class="tog-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            <span class="tog-text">Domestic Content +10%</span>
+          </div>
+          <div class="tog" id="tog-ec" onclick="this.classList.toggle('on')">
+            <div class="tog-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            <span class="tog-text">Energy Community +10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="err-strip" id="errStrip"></div>
+    <div class="run-wrap">
+      <button class="run-btn" id="runBtn" onclick="go()">
+        <span class="btext">Run Analysis</span>
+        <span class="bspin"><span class="ring"></span> Analysing…</span>
+      </button>
     </div>
   </div>
-
-  <!-- RESULTS PANEL -->
-  <div class="results-panel" id="resultsPanel">
-
-    <div class="panel-head">
-      <span class="panel-title">Analysis Output</span>
-      <span class="panel-num">02 / RESULTS</span>
-    </div>
-
-    <!-- EMPTY STATE -->
+  <div class="results-col" id="resultsCol">
+    <div class="col-head"><span class="col-head-title">Analysis Output</span><span class="col-num">§ 02</span></div>
     <div class="empty-state" id="emptyState">
-      <div class="battery-idle">
-        <div class="bat-terminal"></div>
-        <div class="bat-body">
-          <div class="bat-fill" id="idleFill"></div>
-          <div class="bat-pct" id="idlePct">—</div>
+      <div class="empty-rule"></div>
+      <div>
+        <div class="bat-cap"></div>
+        <div class="bat-idle" id="batIdle">
+          <div class="bat-level" id="batIdleLevel"></div>
+          <div class="bat-pct-idle" id="batIdlePct">—</div>
         </div>
       </div>
-      <div class="empty-title">AWAITING INPUT</div>
-      <div class="empty-sub">Enter your site parameters and run the analysis to see NREL-cited BESS sizing</div>
+      <h2 class="empty-h">Awaiting input</h2>
+      <p class="empty-p">Enter site parameters and run the analysis</p>
+      <div class="empty-rule"></div>
     </div>
-
-    <!-- RESULTS -->
-    <div class="results-body" id="resultsBody"></div>
-
+    <div class="results-body" id="resBody"></div>
   </div>
 </div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="foot-left">© 2025 <span>Tinashe Nedi</span> · Powered by Solar + BESS Sizing API</div>
-  <div class="foot-links">
+<footer class="site-foot">
+  <div class="sf-left">© 2025 <strong>Tinashe Nedi</strong> · Powered by Solar + BESS Sizing API</div>
+  <div class="sf-links">
     <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">API Access</a>
     <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
     <a href="mailto:support@solartruth.app">Contact</a>
   </div>
 </footer>
-<div class="disclaimer">
-  Results are based on NREL ATB 2024, PNNL-33283, and OpenEI tariff data. This tool is intended for feasibility screening only and does not constitute financial, engineering, or tax advice. ITC eligibility depends on project-specific facts — consult a qualified tax professional before claiming adders. For site-specific accuracy, use your actual utility demand charge rate via the custom rate override.
-</div>
-
-<!-- PLANS OVERLAY -->
-<div class="overlay" id="plansOverlay" onclick="closePlansOutside(event)">
-  <div class="plans-modal">
-    <div class="modal-head">
-      <div class="modal-title">PLANS & ACCESS</div>
-      <button class="modal-close" onclick="closePlans()">✕</button>
-    </div>
-    <div style="padding:28px 32px 20px;border-bottom:1px solid var(--border)">
-      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);line-height:2">
-        API ACCESS AND PLATFORM ACCESS ARE SEPARATE. YOU DO NOT NEED TO USE THIS TOOL TO USE THE API.<br>
-        FREE PLAN — QUICK SIZING, NO KEY REQUIRED &nbsp;·&nbsp; PRO — FULL ANALYSIS, KEY REQUIRED &nbsp;·&nbsp; ULTRA — WHITE LABEL RIGHTS, REQUIRES APPROVAL<br>
-        WHITE LABEL IS <span style="color:var(--amber)">ULTRA ONLY.</span> PRO SUBSCRIBERS MAY NOT EMBED ON A CLIENT-FACING DOMAIN.
-      </div>
-    </div>
-    <div class="plans-grid">
-      <div class="plan-col">
-        <div class="plan-tag">FREE</div>
-        <div class="plan-name">Basic</div>
+<div class="disclaimer">Results based on NREL ATB 2024, PNNL-33283, and OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility depends on project-specific facts; consult a qualified tax professional. Use custom_demand_rate for site-specific accuracy.</div>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closePlans()">
+  <div class="modal">
+    <div class="modal-top"><div class="modal-h">Plans &amp; Access</div><button class="modal-x" onclick="closePlans()">✕</button></div>
+    <div class="modal-note">API access and platform access are separate. Free · Pro · Ultra — <strong>White label is Ultra only.</strong> Pro subscribers may not embed on a client domain.</div>
+    <div class="plans-cols">
+      <div class="plan">
+        <div class="plan-tier">Free</div><div class="plan-name">Basic</div>
         <div class="plan-price">$0 / month · 5 calls/min</div>
-        <div class="plan-features">
+        <div class="plan-feats">
           <div class="pf">Quick BESS sizing</div>
           <div class="pf">ATB 2024 CAPEX mid scenario</div>
-          <div class="pf">ITC 30% base calculation</div>
+          <div class="pf">ITC 30% base</div>
           <div class="pf">Demand charge + TOU savings</div>
           <div class="pf">PNNL LCOS validated range</div>
           <div class="pf">Viability verdict</div>
         </div>
-        <a class="plan-cta" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get Free Access</a>
+        <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get Free Key</a>
       </div>
-      <div class="plan-col featured">
-        <div class="ultra-badge">★ RECOMMENDED</div>
-        <div class="plan-tag">PRO</div>
-        <div class="plan-name">Pro</div>
+      <div class="plan pro">
+        <div class="plan-tier">★ Recommended</div><div class="plan-name">Pro</div>
         <div class="plan-price">$99 / month · 1,000 calls/hr</div>
-        <div class="plan-features">
-          <div class="pf">All 3 ATB scenarios (conservative / moderate / advanced)</div>
+        <div class="plan-feats">
+          <div class="pf">All 3 ATB scenarios</div>
           <div class="pf">Full NPV, IRR, LCOS per scenario</div>
           <div class="pf">ITC adder stacking to 50%</div>
           <div class="pf">Solar + BESS co-optimisation</div>
           <div class="pf">Custom demand rate override</div>
-          <div class="pf">Load factor input</div>
-          <div class="pf">WACC input</div>
+          <div class="pf">Load factor + WACC inputs</div>
         </div>
-        <a class="plan-cta" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Subscribe to Pro</a>
+        <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Subscribe to Pro</a>
       </div>
-      <div class="plan-col">
-        <div class="ultra-badge">WHITE LABEL</div>
-        <div class="plan-tag">ULTRA</div>
-        <div class="plan-name">Ultra</div>
+      <div class="plan">
+        <div class="white-only">White Label</div>
+        <div class="plan-tier">Ultra</div><div class="plan-name">Ultra</div>
         <div class="plan-price">$299 / month · Requires Approval</div>
-        <div class="plan-features">
+        <div class="plan-feats">
           <div class="pf">Everything in Pro</div>
-          <div class="pf">White-label rights — embed on your domain</div>
-          <div class="pf">Your logo and branding</div>
-          <div class="pf">Remove all SolarTruth attribution</div>
+          <div class="pf">Embed on your domain</div>
+          <div class="pf">Your logo &amp; branding</div>
+          <div class="pf">Remove all attribution</div>
           <div class="pf">Priority support</div>
         </div>
-        <a class="plan-cta" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Apply for Ultra</a>
+        <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Apply for Ultra</a>
       </div>
     </div>
-    <div class="modal-footer">
-      All APIs available as a bundle from $249/month · <a href="mailto:support@solartruth.app">support@solartruth.app</a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a>
-    </div>
+    <div class="modal-foot">All 8 APIs bundled from $249/month · <a href="mailto:support@solartruth.app">support@solartruth.app</a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a></div>
   </div>
 </div>
-
 <script>
-// ═══ HELPERS ═══════════════════════════════════════════════
-function fmt$(n){ return '$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
-function fmtN(n,d=1){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:d}); }
+const $=id=>document.getElementById(id);
+const fmt$=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const fmtN=(n,d=1)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
+function openPlans(){$('overlay').classList.add('open')}
+function closePlans(){$('overlay').classList.remove('open')}
+(function(){const l=$('batIdleLevel'),p=$('batIdlePct');if(!l)return;let v=25,up=true;setInterval(()=>{v+=up?.8:-.8;if(v>=65)up=false;if(v<=20)up=true;l.style.height=v+'%';p.textContent=Math.round(v)+'%';},80);})();
+function countUp(el,target,pre='',suf='',dec=0,dur=1100){const t0=performance.now();(function f(now){const p=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-p,3),v=target*ease;el.textContent=pre+fmtN(v,dec)+suf;if(p<1)requestAnimationFrame(f);else el.textContent=pre+fmtN(target,dec)+suf;})(t0);}
+function fillBat(fe,pe,pct){setTimeout(()=>{fe.style.height=pct+'%';let c=0;const iv=setInterval(()=>{c=Math.min(c+2,pct);pe.textContent=c+'%';if(c>=pct)clearInterval(iv);},25);},400);}
+function showErr(m){const e=$('errStrip');e.textContent='⚠ '+m;e.style.display='block';}
+function clearErr(){$('errStrip').style.display='none';}
 
-function toggleItem(el){
-  el.classList.toggle('active');
-  const cb = el.querySelector('input[type=checkbox]');
-  if(cb) cb.checked = el.classList.contains('active');
-}
+// IMPORTANT: RapidAPI requires X-RapidAPI-Key on ALL tiers including free
+// The key authenticates you with their proxy — without it you get 403 regardless of plan
+const HOST='solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com';
+const BASE='https://'+HOST;
 
-function openPlans(){ document.getElementById('plansOverlay').classList.add('open'); }
-function closePlans(){ document.getElementById('plansOverlay').classList.remove('open'); }
-function closePlansOutside(e){ if(e.target===document.getElementById('plansOverlay')) closePlans(); }
-
-// ═══ COUNTER ANIMATION ═════════════════════════════════════
-function animateCount(el, target, prefix='', suffix='', decimals=0, duration=1200){
-  const start = performance.now();
-  const from = 0;
-  function update(now){
-    const p = Math.min((now-start)/duration, 1);
-    const ease = 1 - Math.pow(1-p, 3);
-    const val = from + (target-from)*ease;
-    el.textContent = prefix + fmtN(val, decimals) + suffix;
-    if(p<1) requestAnimationFrame(update);
-    else el.textContent = prefix + fmtN(target, decimals) + suffix;
-  }
-  requestAnimationFrame(update);
-}
-
-// ═══ BATTERY FILL ══════════════════════════════════════════
-function fillBattery(el, pctEl, pct){
-  setTimeout(()=>{
-    el.style.height = pct+'%';
-    let cur = 0;
-    const iv = setInterval(()=>{
-      cur = Math.min(cur+2, pct);
-      pctEl.textContent = cur+'%';
-      if(cur>=pct) clearInterval(iv);
-    }, 20);
-  }, 300);
-}
-
-// ═══ IDLE BATTERY PULSE ════════════════════════════════════
-(function idlePulse(){
-  const fill = document.getElementById('idleFill');
-  const pct  = document.getElementById('idlePct');
-  if(!fill) return;
-  let up = true, val = 20;
-  setInterval(()=>{
-    val += up ? 1 : -1;
-    if(val>=60) up=false;
-    if(val<=20) up=true;
-    fill.style.height = val+'%';
-    pct.textContent = val+'%';
-  }, 60);
-})();
-
-// ═══ MAIN ANALYSIS ═════════════════════════════════════════
-async function runAnalysis(){
-  const peak   = parseFloat(document.getElementById('peak').value);
-  const state  = document.getElementById('state').value;
-  const rate   = parseFloat(document.getElementById('rate').value);
-  const cons   = parseFloat(document.getElementById('consumption').value)||0;
-  const chem   = document.getElementById('chemistry').value;
-  const hours  = parseFloat(document.getElementById('hours').value)||4;
-  const shave  = parseFloat(document.getElementById('shave').value)||0.20;
-  const key    = document.getElementById('apikey').value.trim();
-  const dc     = document.getElementById('tog-dc').classList.contains('active');
-  const ec     = document.getElementById('tog-ec').classList.contains('active');
-
-  const errBox = document.getElementById('errorBox');
-  errBox.style.display='none';
-
-  if(!peak||peak<10){ showError('Peak demand must be at least 10 kW.'); return; }
-  if(!rate||rate<0.01){ showError('Electricity rate required.'); return; }
-
-  const btn = document.getElementById('runBtn');
-  btn.disabled = true; btn.classList.add('loading');
-
-  const isPro = key.startsWith('PRO-') || key.startsWith('ULTRA-') || (key.length > 20);
-  const BASE = 'https://solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com';
-
-  try {
-    let data;
-
-    if(isPro && cons > 0){
-      const body = {
-        peak_demand_kw: peak, state, flat_rate_usd_kwh: rate,
-        annual_kwh_consumption: cons, chemistry_type: chem,
-        discharge_hours: hours, shave_target_pct: shave,
-        wacc: 0.07, domestic_content: dc, energy_community: ec
-      };
-      const res = await fetch(BASE+'/bess/optimal',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'X-RapidAPI-Key': key,
-          'X-RapidAPI-Host':'solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com'
-        },
-        body: JSON.stringify(body)
-      });
-      if(!res.ok){
-        const e = await res.json().catch(()=>({}));
-        throw new Error(e.detail || `Error ${res.status}`);
-      }
-      data = await res.json();
-      data._mode = 'optimal';
+async function go(){
+  clearErr();
+  const peak=parseFloat($('peak').value),state=$('state').value,
+        rate=parseFloat($('rate').value),cons=parseFloat($('cons').value)||0,
+        chem=$('chem').value,hrs=parseFloat($('hrs').value)||4,
+        shave=parseFloat($('shave').value)||.20,
+        key=$('apikey').value.trim(),
+        dc=$('tog-dc').classList.contains('on'),
+        ec=$('tog-ec').classList.contains('on');
+  if(!peak||peak<10){showErr('Peak demand must be at least 10 kW.');return;}
+  if(!rate||rate<.01){showErr('Electricity rate is required.');return;}
+  if(!key){showErr('A RapidAPI key is required — free or paid. Get one at rapidapi.com/bethelnedi (the free plan is free, it just needs a key to route through RapidAPI).');return;}
+  const btn=$('runBtn');btn.disabled=true;btn.classList.add('loading');
+  const hdrs={'Content-Type':'application/json','X-RapidAPI-Key':key,'X-RapidAPI-Host':HOST};
+  const isPro=key.length>15,useFull=isPro&&cons>0;
+  try{
+    let data,r;
+    if(useFull){
+      r=await fetch(BASE+'/bess/optimal',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,annual_kwh_consumption:cons,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave,wacc:.07,domestic_content:dc,energy_community:ec})});
     } else {
-      const body = {
-        peak_demand_kw: peak, state, flat_rate_usd_kwh: rate,
-        chemistry_type: chem, discharge_hours: hours, shave_target_pct: shave
-      };
-      const headers = {'Content-Type':'application/json'};
-      if(key){ headers['X-RapidAPI-Key']=key; headers['X-RapidAPI-Host']='solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com'; }
-      const res = await fetch(BASE+'/bess/quick',{method:'POST',headers,body:JSON.stringify(body)});
-      if(!res.ok){
-        const e = await res.json().catch(()=>({}));
-        throw new Error(e.detail || `Error ${res.status}`);
-      }
-      data = await res.json();
-      data._mode = 'quick';
+      r=await fetch(BASE+'/bess/quick',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})});
     }
-
-    renderResults(data);
-  } catch(err){
-    showError(err.message || 'Connection error. Check your API key and try again.');
-  } finally {
-    btn.disabled=false; btn.classList.remove('loading');
-  }
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'API error '+r.status+'. Check your key is correct and your plan has access to this endpoint.');}
+    data=await r.json();data._mode=useFull?'optimal':'quick';
+    render(data);
+  }catch(err){showErr(err.message||'Connection error. Try again.');}
+  finally{btn.disabled=false;btn.classList.remove('loading');}
 }
 
-function showError(msg){
-  const b = document.getElementById('errorBox');
-  b.textContent = '⚠ '+msg;
-  b.style.display = 'block';
-}
-
-// ═══ RENDER ════════════════════════════════════════════════
-function renderResults(d){
-  document.getElementById('emptyState').style.display = 'none';
-  const rb = document.getElementById('resultsBody');
-  rb.innerHTML = '';
-  rb.style.display = 'flex';
-  rb.classList.add('visible');
-
-  const mode  = d._mode;
-  const sz    = d.sizing;
-  const chem  = d.chemistry;
-  const viab  = d.viability;
-
-  // -- VIABILITY BANNER
-  const vib = document.createElement('div');
-  vib.className = `viability-banner fade-up fade-up-1 ${viab}`;
-  vib.innerHTML = `
-    <div>
-      <div class="vib-verdict">${viab.toUpperCase()}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:3px">${mode==='optimal'?'PRO ANALYSIS · ALL ATB SCENARIOS':'FREE ANALYSIS · MID SCENARIO'}</div>
-    </div>
-    <div class="vib-note">${d.viability_note||''}</div>`;
-  rb.appendChild(vib);
-
-  // -- KEY METRICS
-  let payback, npv, irr, lcos_mwh, totalSavings, netCapex, totalCapex, itcPct;
+function render(d){
+  $('emptyState').style.display='none';
+  const rb=$('resBody');rb.innerHTML='';rb.classList.add('on');
+  const mode=d._mode,sz=d.sizing,ch=d.chemistry,viab=d.viability;
+  let payback,npv,irr,lcos,savings,netCap,totCap,itcPct,itcCredit,demS,touS,solS=0;
   if(mode==='optimal'){
-    const mid = d.atb_scenarios.mid;
-    payback = mid.financials.simple_payback_yrs;
-    npv     = mid.financials.npv_usd;
-    irr     = mid.financials.irr_pct;
-    lcos_mwh= mid.lcos.lcos_usd_per_mwh;
-    totalSavings = d.annual_savings.total_annual_savings_usd;
-    netCapex= mid.itc.net_capex_usd;
-    totalCapex = mid.capex.total_capex_usd;
-    itcPct  = mid.itc.itc_rate_pct;
+    const m=d.atb_scenarios.mid;
+    payback=m.financials.simple_payback_yrs;npv=m.financials.npv_usd;irr=m.financials.irr_pct;
+    lcos=m.lcos.lcos_usd_per_mwh;savings=d.annual_savings.total_annual_savings_usd;
+    netCap=m.itc.net_capex_usd;totCap=m.capex.total_capex_usd;
+    itcPct=m.itc.itc_rate_pct;itcCredit=m.itc.itc_credit_usd;
+    demS=d.annual_savings.demand_charge_savings_usd;
+    touS=d.annual_savings.tou_arbitrage_savings_usd;
+    solS=d.annual_savings.solar_self_consumption_uplift_usd||0;
   } else {
-    payback = d.financials_mid.simple_payback_yrs;
-    npv     = null;
-    irr     = null;
-    lcos_mwh= d.financials_mid.lcos_usd_per_mwh;
-    totalSavings = d.annual_savings.total_usd;
-    netCapex= d.capex_mid_scenario.net_capex_after_itc_usd;
-    totalCapex = d.capex_mid_scenario.total_capex_usd;
-    itcPct  = 30;
+    payback=d.financials_mid.simple_payback_yrs;lcos=d.financials_mid.lcos_usd_per_mwh;
+    savings=d.annual_savings.total_usd;netCap=d.capex_mid_scenario.net_capex_after_itc_usd;
+    totCap=d.capex_mid_scenario.total_capex_usd;itcPct=30;itcCredit=d.capex_mid_scenario.itc_30pct_usd;
+    demS=d.annual_savings.demand_charge_usd;touS=d.annual_savings.tou_arbitrage_usd;
   }
 
-  const mg = document.createElement('div');
-  mg.className = 'metric-grid fade-up fade-up-2';
-  mg.innerHTML = `
-    <div class="metric">
-      <div class="metric-val amber" id="m-payback">—</div>
-      <div class="metric-unit">years</div>
-      <div class="metric-label">Simple Payback</div>
+  const hd=document.createElement('div');hd.className='res-head ani ani-1';
+  hd.innerHTML=`<div class="res-head-title">${mode==='optimal'?'PRO ANALYSIS — ALL ATB SCENARIOS':'FREE ANALYSIS — MID SCENARIO'}</div><div class="viab-pill ${viab}">${viab.toUpperCase()}</div>`;
+  rb.appendChild(hd);
+
+  const sr=document.createElement('div');sr.className='stat-row ani ani-2';
+  sr.innerHTML=`<div class="sr-cell"><div class="sr-num" id="sn-pay">—</div><div class="sr-unit">YEARS</div><div class="sr-label">Simple Payback</div></div>
+  <div class="sr-cell"><div class="sr-num grn" id="sn-sav">—</div><div class="sr-unit">PER YEAR</div><div class="sr-label">Annual Savings</div></div>
+  <div class="sr-cell"><div class="sr-num" id="sn-net">—</div><div class="sr-unit">AFTER ITC</div><div class="sr-label">Net CAPEX</div></div>
+  <div class="sr-cell"><div class="sr-num blu" id="sn-lcos">—</div><div class="sr-unit">$/MWh</div><div class="sr-label">LCOS</div></div>`;
+  rb.appendChild(sr);
+  setTimeout(()=>{countUp($('sn-pay'),payback,'','yr',1);countUp($('sn-sav'),savings,'$','',0);countUp($('sn-net'),netCap,'$','',0);countUp($('sn-lcos'),lcos,'$','',1);},150);
+
+  if(d.viability_note){const vn=document.createElement('div');vn.className='res-section ani ani-3';vn.innerHTML=`<div class="viab-note">${d.viability_note}</div>`;rb.appendChild(vn);}
+
+  const pwr=sz.bess_power_kw,kwh=sz.bess_nameplate_kwh,usable=sz.bess_usable_kwh,batPct=Math.min(100,Math.round(usable/kwh*100));
+  const sc=document.createElement('div');sc.className='res-section ani ani-3';
+  sc.innerHTML=`<div class="rs-title">Optimal Sizing <span class="rs-cite">Neubauer & Simpson (2015) NREL/TP-5400-63162</span></div>
+  <div class="sizing-display">
+    <div class="bat-result">
+      <div class="bat-r-cap"></div>
+      <div class="bat-r-body"><div class="bat-r-fill" id="brf"></div><div class="bat-r-pct" id="brp">0%</div></div>
+      <div class="bat-r-label">${(ch.type||'lfp').toUpperCase()}</div>
     </div>
-    <div class="metric">
-      <div class="metric-val green" id="m-savings">—</div>
-      <div class="metric-unit">per year</div>
-      <div class="metric-label">Annual Savings</div>
+    <div class="sizing-specs">
+      <div class="spec-row"><span class="spec-k">BESS Power</span><span class="spec-v">${fmtN(pwr,0)}<small>kW</small></span></div>
+      <div class="spec-row"><span class="spec-k">Nameplate Energy</span><span class="spec-v">${fmtN(kwh,0)}<small>kWh</small></span></div>
+      <div class="spec-row"><span class="spec-k">Usable Energy</span><span class="spec-v">${fmtN(usable,0)}<small>kWh</small></span></div>
+      <div class="spec-row"><span class="spec-k">Discharge Duration</span><span class="spec-v">${sz.discharge_hours}<small>h</small></span></div>
+      <div class="spec-row"><span class="spec-k">RTE (AC-AC)</span><span class="spec-v">${ch.rte_ac_ac||0.85}<small>per ATB2024b</small></span></div>
+      <div class="spec-row"><span class="spec-k">Calendar Life</span><span class="spec-v">${ch.calendar_life_yrs||15}<small>years</small></span></div>
     </div>
-    <div class="metric">
-      <div class="metric-val" id="m-netcap">—</div>
-      <div class="metric-unit">after ITC</div>
-      <div class="metric-label">Net CAPEX</div>
-    </div>
-    <div class="metric">
-      <div class="metric-val blue" id="m-lcos">—</div>
-      <div class="metric-unit">$/MWh</div>
-      <div class="metric-label">LCOS</div>
-    </div>`;
-  rb.appendChild(mg);
+  </div>`;
+  rb.appendChild(sc);
+  setTimeout(()=>fillBat($('brf'),$('brp'),batPct),300);
 
-  setTimeout(()=>{
-    animateCount(document.getElementById('m-payback'), payback, '', ' yr', 1);
-    animateCount(document.getElementById('m-savings'), totalSavings, '$', '', 0);
-    animateCount(document.getElementById('m-netcap'), netCapex, '$', '', 0);
-    animateCount(document.getElementById('m-lcos'), lcos_mwh, '$', '', 1);
-  }, 200);
-
-  // -- BATTERY + SIZING
-  const pwr  = sz.bess_power_kw;
-  const kwh  = sz.bess_nameplate_kwh;
-  const usable = sz.bess_usable_kwh;
-  const batPct = Math.min(100, Math.round((usable/kwh)*100));
-
-  const bv = document.createElement('div');
-  bv.className = 'fade-up fade-up-3';
-  bv.innerHTML = `
-    <div class="sec-head">Optimal Sizing</div>
-    <div class="battery-visual">
-      <div class="batt-wrap">
-        <div style="width:52px;height:92px;position:relative">
-          <div style="width:22px;height:7px;background:var(--border2);border-radius:2px 2px 0 0;margin:0 auto"></div>
-          <div style="width:100%;height:82px;border:2px solid var(--border2);border-radius:3px;position:relative;overflow:hidden">
-            <div id="resFill" style="position:absolute;bottom:0;left:0;right:0;height:0%;background:linear-gradient(to top,var(--amber),var(--amber2));transition:height 1.8s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 20px rgba(240,165,0,0.35)"></div>
-            <div id="resPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--white);z-index:2">0%</div>
-          </div>
-        </div>
-      </div>
-      <div class="batt-info">
-        <div class="batt-row">
-          <span class="batt-row-label">BESS Power</span>
-          <span class="batt-row-val">${fmtN(pwr,0)} <span class="sub">kW</span></span>
-        </div>
-        <div class="batt-row">
-          <span class="batt-row-label">Nameplate Energy</span>
-          <span class="batt-row-val">${fmtN(kwh,0)} <span class="sub">kWh</span></span>
-        </div>
-        <div class="batt-row">
-          <span class="batt-row-label">Usable Energy</span>
-          <span class="batt-row-val">${fmtN(usable,0)} <span class="sub">kWh (${chem.dod ? Math.round(chem.dod*100)+'% DoD' : '90% DoD'})</span></span>
-        </div>
-        <div class="batt-row">
-          <span class="batt-row-label">Discharge Duration</span>
-          <span class="batt-row-val">${sz.discharge_hours} <span class="sub">hours</span></span>
-        </div>
-        <div class="batt-row">
-          <span class="batt-row-label">Chemistry</span>
-          <span class="batt-row-val">${chem.label||chem.type} <span class="sub">RTE ${chem.rte_ac_ac}</span></span>
-        </div>
-        <div class="batt-row">
-          <span class="batt-row-label">Sizing Method</span>
-          <span class="batt-row-val" style="font-size:10px;color:var(--muted)">LDC — Neubauer & Simpson (2015)</span>
-        </div>
-      </div>
-    </div>`;
-  rb.appendChild(bv);
-  setTimeout(()=>fillBattery(document.getElementById('resFill'), document.getElementById('resPct'), batPct), 400);
-
-  // -- SAVINGS BREAKDOWN
-  let demSav, touSav, solSav, uplSav;
-  if(mode==='optimal'){
-    demSav = d.annual_savings.demand_charge_savings_usd;
-    touSav = d.annual_savings.tou_arbitrage_savings_usd;
-    solSav = d.annual_savings.solar_self_consumption_uplift_usd||0;
-    uplSav = 0;
-  } else {
-    demSav = d.annual_savings.demand_charge_usd;
-    touSav = d.annual_savings.tou_arbitrage_usd;
-    solSav = 0; uplSav = 0;
-  }
-  const maxSav = Math.max(demSav, touSav, solSav, uplSav, 1);
-
-  const sv = document.createElement('div');
-  sv.className = 'fade-up fade-up-4';
-  sv.innerHTML = `
-    <div class="sec-head">Annual Savings Breakdown</div>
-    <div class="savings-bars">
-      <div class="sbar-row">
-        <div class="sbar-head"><span class="sbar-label">Demand Charge Reduction</span><span class="sbar-val">${fmt$(demSav)}</span></div>
-        <div class="sbar-track"><div class="sbar-fill demand" id="sb-dem" data-w="${(demSav/maxSav*100).toFixed(1)}"></div></div>
-      </div>
-      <div class="sbar-row">
-        <div class="sbar-head"><span class="sbar-label">TOU Arbitrage</span><span class="sbar-val">${fmt$(touSav)}</span></div>
-        <div class="sbar-track"><div class="sbar-fill tou" id="sb-tou" data-w="${(touSav/maxSav*100).toFixed(1)}"></div></div>
-      </div>
-      ${solSav>0?`<div class="sbar-row">
-        <div class="sbar-head"><span class="sbar-label">Solar Self-Consumption Uplift</span><span class="sbar-val">${fmt$(solSav)}</span></div>
-        <div class="sbar-track"><div class="sbar-fill uplift" id="sb-sol" data-w="${(solSav/maxSav*100).toFixed(1)}"></div></div>
-      </div>`:''}
-    </div>`;
+  const maxS=Math.max(demS,touS,solS,1);
+  const sv=document.createElement('div');sv.className='res-section ani ani-4';
+  sv.innerHTML=`<div class="rs-title">Annual Savings Breakdown <span class="rs-cite">OpenEI Utility Rate DB 2024</span></div>
+  <div class="sav-list">
+    <div class="sav-item"><div class="sav-head"><span class="sav-label">Demand Charge Reduction</span><span class="sav-val">${fmt$(demS)}</span></div><div class="sav-track"><div class="sav-fill d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div></div>
+    <div class="sav-item"><div class="sav-head"><span class="sav-label">TOU Arbitrage</span><span class="sav-val">${fmt$(touS)}</span></div><div class="sav-track"><div class="sav-fill t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div></div>
+    ${solS>0?`<div class="sav-item"><div class="sav-head"><span class="sav-label">Solar Self-Consumption Uplift</span><span class="sav-val">${fmt$(solS)}</span></div><div class="sav-track"><div class="sav-fill u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div></div>`:''}
+  </div>`;
   rb.appendChild(sv);
-  setTimeout(()=>{
-    ['sb-dem','sb-tou','sb-sol'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el) el.style.width = el.dataset.w+'%';
-    });
-  }, 500);
+  setTimeout(()=>{['sf-d','sf-t','sf-s'].forEach(id=>{const el=$(id);if(el)el.style.width=el.dataset.w+'%';});},400);
 
-  // -- ATB SCENARIOS (Pro only)
-  if(mode==='optimal' && d.atb_scenarios){
-    const sc = d.atb_scenarios;
-    const st = document.createElement('div');
-    st.className = 'fade-up fade-up-5';
-    st.innerHTML = `
-      <div class="sec-head">NREL ATB 2024 — Three Cost Scenarios</div>
-      <div class="scenario-wrap">
-        <table class="scenario-table">
-          <thead>
-            <tr>
-              <th>Scenario</th>
-              <th>CAPEX</th>
-              <th>ITC Credit</th>
-              <th>Net CAPEX</th>
-              <th>LCOS</th>
-              <th>NPV</th>
-              <th>IRR</th>
-              <th>Payback</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="val-green">Conservative</td>
-              <td>${fmt$(sc.high.capex.total_capex_usd)}</td>
-              <td>${fmt$(sc.high.itc.itc_credit_usd)}</td>
-              <td>${fmt$(sc.high.itc.net_capex_usd)}</td>
-              <td class="val-amber">$${sc.high.lcos.lcos_usd_per_mwh}/MWh</td>
-              <td class="val-green">${fmt$(sc.high.financials.npv_usd)}</td>
-              <td>${sc.high.financials.irr_pct}%</td>
-              <td>${sc.high.financials.simple_payback_yrs} yr</td>
-            </tr>
-            <tr class="mid-row">
-              <td>Moderate <span class="tag-mid">REC</span></td>
-              <td>${fmt$(sc.mid.capex.total_capex_usd)}</td>
-              <td>${fmt$(sc.mid.itc.itc_credit_usd)}</td>
-              <td>${fmt$(sc.mid.itc.net_capex_usd)}</td>
-              <td class="val-amber">$${sc.mid.lcos.lcos_usd_per_mwh}/MWh</td>
-              <td class="val-green">${fmt$(sc.mid.financials.npv_usd)}</td>
-              <td>${sc.mid.financials.irr_pct}%</td>
-              <td>${sc.mid.financials.simple_payback_yrs} yr</td>
-            </tr>
-            <tr>
-              <td class="val-blue">Advanced</td>
-              <td>${fmt$(sc.low.capex.total_capex_usd)}</td>
-              <td>${fmt$(sc.low.itc.itc_credit_usd)}</td>
-              <td>${fmt$(sc.low.itc.net_capex_usd)}</td>
-              <td class="val-amber">$${sc.low.lcos.lcos_usd_per_mwh}/MWh</td>
-              <td class="val-green">${fmt$(sc.low.financials.npv_usd)}</td>
-              <td>${sc.low.financials.irr_pct}%</td>
-              <td>${sc.low.financials.simple_payback_yrs} yr</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:10px;letter-spacing:1px">
-        Source: Cole & Karmakar (2023) NREL/TP-6A40-85332 · Cole, Ramasamy & Turan (2025) NREL/TP-6A40-93281 · PNNL LCOS range: $200–$400/MWh [PNNL-33283]
-      </div>`;
+  if(mode==='optimal'&&d.atb_scenarios){
+    const s2=d.atb_scenarios,st=document.createElement('div');st.className='res-section ani ani-4';
+    st.innerHTML=`<div class="rs-title">NREL ATB 2024 — Three Cost Scenarios <span class="rs-cite">Cole & Karmakar 2023 · Ramasamy et al. 2023</span></div>
+    <div class="scen-wrap"><table class="scen-table">
+      <thead><tr><th>Scenario</th><th>CAPEX</th><th>ITC Credit</th><th>Net CAPEX</th><th>LCOS</th><th>NPV</th><th>IRR</th><th>Payback</th></tr></thead>
+      <tbody>
+        <tr><td class="td-b">Conservative</td><td>${fmt$(s2.high.capex.total_capex_usd)}</td><td>${fmt$(s2.high.itc.itc_credit_usd)}</td><td>${fmt$(s2.high.itc.net_capex_usd)}</td><td>$${s2.high.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.high.financials.npv_usd)}</td><td>${s2.high.financials.irr_pct}%</td><td>${s2.high.financials.simple_payback_yrs}yr</td></tr>
+        <tr class="mid-row"><td>Moderate <span class="rec-badge">REC</span></td><td>${fmt$(s2.mid.capex.total_capex_usd)}</td><td>${fmt$(s2.mid.itc.itc_credit_usd)}</td><td>${fmt$(s2.mid.itc.net_capex_usd)}</td><td>$${s2.mid.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.mid.financials.npv_usd)}</td><td>${s2.mid.financials.irr_pct}%</td><td>${s2.mid.financials.simple_payback_yrs}yr</td></tr>
+        <tr><td class="td-g">Advanced</td><td>${fmt$(s2.low.capex.total_capex_usd)}</td><td>${fmt$(s2.low.itc.itc_credit_usd)}</td><td>${fmt$(s2.low.itc.net_capex_usd)}</td><td>$${s2.low.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.low.financials.npv_usd)}</td><td>${s2.low.financials.irr_pct}%</td><td>${s2.low.financials.simple_payback_yrs}yr</td></tr>
+      </tbody>
+    </table></div>`;
     rb.appendChild(st);
   }
 
-  // -- ITC BLOCK
-  const itc = document.createElement('div');
-  itc.className = 'fade-up fade-up-5';
-  let itcHtml = `<div class="sec-head">IRA 2022 Investment Tax Credit</div>
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-      <div class="itc-rate" id="m-itc">—</div>
-      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px">ITC RATE · CREDIT: <span style="color:var(--amber)">${fmt$(totalCapex * (itcPct/100))}</span></div>
+  const adders=mode==='optimal'?(d.atb_scenarios?.mid?.itc?.adders_applied||{}):{};
+  const itcEl=document.createElement('div');itcEl.className='res-section ani ani-5';
+  itcEl.innerHTML=`<div class="rs-title">IRA 2022 Investment Tax Credit <span class="rs-cite">§48E · §48C(e)(2)(A) · §48E(b)(3)(B)</span></div>
+  <div class="itc-display">
+    <div class="itc-big" id="itcBig">—<small>%</small></div>
+    <div class="itc-breakdown">
+      <div class="itc-line active"><div class="itc-dot"></div>Base 30% · IRA 2022 §48E<span class="itc-amt">${fmt$(totCap*.30)}</span></div>
+      <div class="itc-line ${adders.domestic_content?'active':''}"><div class="itc-dot"></div>Domestic Content +10% · §48C(e)(2)(A)<span class="itc-amt">${adders.domestic_content?fmt$(totCap*.10):'—'}</span></div>
+      <div class="itc-line ${adders.energy_community?'active':''}"><div class="itc-dot"></div>Energy Community +10% · §48E(b)(3)(B)<span class="itc-amt">${adders.energy_community?fmt$(totCap*.10):'—'}</span></div>
+      <div class="itc-line active" style="border-top:1px solid var(--rule2);margin-top:4px;padding-top:8px"><div class="itc-dot"></div><strong>Total ITC Credit</strong><span class="itc-amt" style="color:var(--red)">${fmt$(itcCredit)}</span></div>
     </div>
-    <div class="itc-row">
-      <div class="itc-badge active">Base 30% · IRA 2022 §48E</div>`;
-  if(mode==='optimal'){
-    const adders = d.atb_scenarios?.mid?.itc?.adders_applied||{};
-    if(adders.domestic_content) itcHtml += `<div class="itc-badge active">Domestic Content +10% · §48C(e)(2)(A)</div>`;
-    if(adders.energy_community) itcHtml += `<div class="itc-badge active">Energy Community +10% · §48E(b)(3)(B)</div>`;
-  }
-  itcHtml += `</div>`;
-  itc.innerHTML = itcHtml;
-  rb.appendChild(itc);
-  setTimeout(()=>animateCount(document.getElementById('m-itc'), itcPct, '', '%', 0, 800), 300);
+  </div>`;
+  rb.appendChild(itcEl);
+  setTimeout(()=>{countUp($('itcBig'),itcPct,'','',0,800);},200);
+  setTimeout(()=>{const el=$('itcBig');if(el)el.innerHTML=fmtN(itcPct,0)+'<small>%</small>';},1200);
 
-  // -- SOURCES
   if(d.master_source_list){
-    const src = document.createElement('div');
-    src.className = 'sources-collapse fade-up fade-up-6';
-    const entries = Object.entries(d.master_source_list).map(([k,v])=>
-      `<div class="source-item"><span style="color:var(--amber2)">${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`
-    ).join('');
-    src.innerHTML = `
-      <button class="sources-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ HIDE CITATIONS':'▼ VIEW ALL CITATIONS (${Object.keys(d.master_source_list).length})'">
-        ▼ VIEW ALL CITATIONS (${Object.keys(d.master_source_list).length})
-      </button>
-      <div class="sources-body">${entries}</div>`;
-    rb.appendChild(src);
+    const srcEl=document.createElement('div');srcEl.className='res-section ani ani-6';
+    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="src-row"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
+    srcEl.innerHTML=`<button class="src-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide citations':'▼ View all citations (${Object.keys(d.master_source_list).length})'">▼ View all citations (${Object.keys(d.master_source_list).length})</button><div class="src-body">${rows}</div>`;
+    rb.appendChild(srcEl);
   }
 
-  // Scroll to results on mobile
-  if(window.innerWidth < 900){
-    document.getElementById('resultsPanel').scrollIntoView({behavior:'smooth',block:'start'});
-  }
+  if(window.innerWidth<880)$('resultsCol').scrollIntoView({behavior:'smooth'});
 }
-
-// Enter key on inputs
-document.addEventListener('keydown', e=>{
-  if(e.key==='Enter') runAnalysis();
-});
+document.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
 </script>
 </body>
 </html>
