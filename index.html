@@ -3,404 +3,956 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BESSiq — Battery Storage Sizing Intelligence</title>
+<title>BESSiq — Battery Storage Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0a0a0a;--ink2:#1a1a1a;--ink3:#2e2e2e;--mid:#6b6b6b;--rule:#d4d4d4;--rule2:#ebebeb;--paper:#f9f8f5;--white:#ffffff;--red:#c0392b;--red2:#e74c3c;--green:#1a6b3a;--blue:#1a3f6b;--amber:#b8860b}
+:root{
+  --bg:#080c14;
+  --bg2:#0c1220;
+  --glass:rgba(255,255,255,0.04);
+  --glass2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
+  --teal:#00e5c8;
+  --teal2:#00bba6;
+  --teal3:rgba(0,229,200,0.12);
+  --purple:#7c5df7;
+  --purple2:rgba(124,93,247,0.15);
+  --amber:#f5a623;
+  --red:#ff4d6d;
+  --green:#22d3a0;
+  --blue:#4da6ff;
+  --text:#e8ecf4;
+  --muted:#6b7a99;
+  --muted2:#4a5568;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--white);color:var(--ink);font-family:'Lora',Georgia,serif;overflow-x:hidden;min-height:100vh}
-.masthead{border-bottom:3px solid var(--ink);padding:0 56px;display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;height:72px}
-.mast-left{display:flex;align-items:center;gap:16px;border-right:1px solid var(--rule)}
-.mast-left a{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--mid);text-decoration:none;text-transform:uppercase;transition:color .2s}
-.mast-left a:hover{color:var(--ink)}
-.mast-sep{color:var(--rule)}
-.logo-wrap{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:0 32px}
-.logo-main{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;letter-spacing:6px;color:var(--ink);text-transform:uppercase}
-.logo-main span{color:var(--red)}
-.logo-sub{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:5px;color:var(--mid);text-transform:uppercase}
-.mast-right{display:flex;align-items:center;justify-content:flex-end;gap:20px;border-left:1px solid var(--rule)}
-.live-ind{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--green);display:flex;align-items:center;gap:6px}
-.live-ind::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2.4s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.btn-access{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--white);background:var(--ink);border:none;padding:10px 20px;cursor:pointer;transition:background .2s;text-decoration:none;display:inline-flex;align-items:center}
-.btn-access:hover{background:var(--red)}
-.issue-line{background:var(--ink);color:var(--white);padding:7px 56px;display:flex;gap:32px;align-items:center;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;overflow:hidden}
-.issue-item{white-space:nowrap;display:flex;align-items:center;gap:8px}
-.issue-item::before{content:'◆';color:var(--red);font-size:6px}
-.marquee-wrap{flex:1;overflow:hidden}
-.marquee-inner{display:flex;animation:marquee 28s linear infinite;white-space:nowrap}
-.marquee-inner span{padding:0 40px}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.hero{display:grid;grid-template-columns:1fr 1fr;min-height:400px;border-bottom:2px solid var(--ink)}
-.hero-left{padding:56px;border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:space-between}
-.hero-kicker{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:20px}
-.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,64px);font-weight:900;line-height:1.0;color:var(--ink)}
-.hero-h1 em{font-style:italic;color:var(--red)}
-.hero-deck{font-size:16px;line-height:1.7;color:var(--mid);max-width:480px;font-style:italic;margin-top:20px}
-.hero-byline{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--rule);text-transform:uppercase;margin-top:32px;border-top:1px solid var(--rule2);padding-top:16px}
-.hero-byline span{color:var(--mid)}
-.hero-right{background:var(--paper);padding:56px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
-.hero-right::before{content:'BESS';position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-size:200px;font-weight:900;color:rgba(0,0,0,.03);line-height:1;user-select:none;pointer-events:none}
-.stat-item{display:grid;grid-template-columns:1fr auto;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--rule2)}
-.stat-item:first-child{border-top:1px solid var(--rule2)}
-.stat-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--mid);text-transform:uppercase}
-.stat-val{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--ink)}
-.stat-val small{font-size:13px;font-weight:400;color:var(--mid);margin-left:4px}
-.workspace{display:grid;grid-template-columns:380px 1fr;min-height:70vh;border-bottom:2px solid var(--ink)}
-.form-col{border-right:1px solid var(--rule);display:flex;flex-direction:column}
-.col-head{padding:18px 32px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between}
-.col-head-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--ink);text-transform:uppercase}
-.col-num{font-family:'Space Mono',monospace;font-size:8px;color:var(--rule)}
-.form-inner{padding:24px 32px;flex:1;display:flex;flex-direction:column;gap:18px}
-.f{display:flex;flex-direction:column;gap:7px}
-.f label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--mid);text-transform:uppercase}
-.req{color:var(--red)}
-.f input,.f select{border:1px solid var(--rule);border-bottom:2px solid var(--ink);background:var(--white);color:var(--ink);font-family:'Space Mono',monospace;font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none;border-radius:0}
-.f input:focus,.f select:focus{border-bottom-color:var(--red)}
-.f-hint{font-family:'Space Mono',monospace;font-size:8px;color:var(--rule);letter-spacing:1px}
-.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.key-box{padding:14px;background:var(--paper);border:1px solid var(--rule2);border-left:3px solid var(--ink)}
-.key-box-head{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--ink);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.key-box-head a{color:var(--red);text-decoration:none;font-size:8px;transition:opacity .2s}
-.key-box-head a:hover{opacity:.7}
-.key-note{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.7;margin-top:8px}
-.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tog{padding:10px 12px;border:1px solid var(--rule2);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px;background:var(--white)}
-.tog:hover{border-color:var(--rule)}
-.tog.on{border-color:var(--ink);background:var(--paper)}
-.tog-check{width:14px;height:14px;border:1px solid var(--rule);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
-.tog.on .tog-check{border-color:var(--ink);background:var(--ink)}
-.tog-check svg{display:none}
-.tog.on .tog-check svg{display:block}
-.tog-text{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.5}
-.tog.on .tog-text{color:var(--ink)}
-.run-wrap{padding:0 32px 28px}
-.run-btn{width:100%;padding:18px;background:var(--ink);color:var(--white);border:none;cursor:pointer;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background .2s;position:relative}
-.run-btn:hover:not(:disabled){background:var(--red)}
-.run-btn:disabled{opacity:.4;cursor:not-allowed}
-.run-btn .btext{display:block}
-.run-btn .bspin{display:none;align-items:center;justify-content:center;gap:10px}
-.run-btn.loading .btext{display:none}
-.run-btn.loading .bspin{display:flex}
-.ring{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* AMBIENT */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% -10%,rgba(124,93,247,0.18) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 110%,rgba(0,229,200,0.12) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+/* GRID */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;z-index:0;
+}
+
+/* NAV */
+nav{
+  position:relative;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+  height:64px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,12,20,0.8);
+  backdrop-filter:blur(20px);
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:22px;letter-spacing:-0.5px;
+}
+.nav-logo .b{color:var(--teal)}
+.nav-logo .rest{color:var(--text)}
+.nav-logo .iq{
+  font-size:10px;font-weight:600;letter-spacing:3px;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-left:2px;
+  border:1px solid rgba(0,229,200,0.3);
+  padding:2px 6px;border-radius:4px;
+  -webkit-text-fill-color:initial;
+  color:var(--teal);
+}
+.nav-center{
+  display:flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--muted);
+  text-transform:uppercase;
+}
+.dot-live{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
+  animation:pulse-live 2s ease-in-out infinite;
+}
+@keyframes pulse-live{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-link{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--muted);
+  text-decoration:none;text-transform:uppercase;
+  transition:color .2s;
+}
+.nav-link:hover{color:var(--teal)}
+.btn-plans{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--bg);background:var(--teal);
+  border:none;padding:9px 18px;cursor:pointer;
+  border-radius:6px;transition:all .2s;
+  font-weight:600;
+}
+.btn-plans:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,229,200,0.3)}
+
+/* HERO */
+.hero{
+  position:relative;z-index:5;
+  padding:72px 40px 56px;
+  max-width:1280px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 400px;gap:64px;align-items:center;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:4px;color:var(--teal);
+  text-transform:uppercase;margin-bottom:24px;
+  background:var(--teal3);border:1px solid rgba(0,229,200,0.2);
+  padding:6px 14px;border-radius:20px;
+}
+.hero-tag::before{content:'◆';font-size:6px}
+.hero-h1{
+  font-size:clamp(44px,6vw,80px);
+  font-weight:900;line-height:1.0;letter-spacing:-2px;
+  color:var(--text);margin-bottom:16px;
+}
+.hero-h1 .grad{
+  background:linear-gradient(135deg,var(--teal) 0%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:18px;font-weight:300;color:var(--muted);
+  line-height:1.65;max-width:520px;margin-bottom:36px;
+}
+.hero-pills{display:flex;gap:10px;flex-wrap:wrap}
+.pill{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--muted);border:1px solid var(--border2);
+  padding:6px 12px;border-radius:4px;text-transform:uppercase;
+  background:var(--glass);
+}
+
+/* HERO RIGHT — stat stack */
+.hero-stats{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px;
+  backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;gap:0;
+}
+.hstat{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0;
+  border-bottom:1px solid var(--border);
+}
+.hstat:last-child{border-bottom:none}
+.hstat-l{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+}
+.hstat-v{
+  font-size:24px;font-weight:800;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hstat-u{font-size:11px;font-weight:400;color:var(--muted);margin-left:3px;-webkit-text-fill-color:var(--muted)}
+
+/* TICKER */
+.ticker{
+  position:relative;z-index:5;
+  background:var(--glass);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  overflow:hidden;padding:10px 0;
+  display:flex;align-items:center;gap:0;
+}
+.ticker-label{
+  flex-shrink:0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--teal);
+  text-transform:uppercase;
+  padding:0 24px;border-right:1px solid var(--border);
+  white-space:nowrap;
+}
+.ticker-scroll{flex:1;overflow:hidden;padding:0 24px}
+.ticker-inner{
+  display:flex;white-space:nowrap;
+  animation:ticker 30s linear infinite;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--muted);
+  text-transform:uppercase;
+}
+.ticker-inner span{padding:0 40px}
+.ticker-inner span::before{content:'◆ ';color:var(--teal);font-size:6px}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* WORKSPACE */
+.workspace{
+  position:relative;z-index:5;
+  max-width:1280px;margin:0 auto;
+  padding:0 40px 80px;
+  display:grid;grid-template-columns:400px 1fr;gap:24px;
+  align-items:start;
+}
+
+/* GLASS CARD */
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:16px;
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+}
+.card-head{
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.card-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+.card-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--muted2);letter-spacing:1px;
+}
+.card-body{padding:24px}
+
+/* FORM */
+.fstack{display:flex;flex-direction:column;gap:16px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;
+}
+.req{color:var(--teal)}
+.field input,.field select{
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  padding:12px 14px;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  appearance:none;-webkit-appearance:none;
+  -webkit-text-fill-color:var(--text);
+}
+.field input:focus,.field select:focus{
+  border-color:var(--teal);
+  box-shadow:0 0 0 3px rgba(0,229,200,0.1);
+}
+.field select option{background:#1a1f30;color:var(--text)}
+.f-hint{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--muted2);letter-spacing:1px;
+}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* KEY BOX */
+.key-box{
+  background:rgba(0,229,200,0.04);
+  border:1px solid rgba(0,229,200,0.2);
+  border-radius:10px;padding:16px;
+}
+.key-head{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
+  margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;
+}
+.key-head a{color:var(--teal);text-decoration:none;font-size:9px;opacity:.7;transition:opacity .2s}
+.key-head a:hover{opacity:1}
+.key-note{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;color:var(--muted);letter-spacing:1px;line-height:1.8;margin-top:8px;
+}
+
+/* TOGGLES */
+.togrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 13px;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--glass);cursor:pointer;transition:all .2s;
+}
+.tog:hover{border-color:var(--border2)}
+.tog.on{border-color:rgba(0,229,200,0.4);background:rgba(0,229,200,0.06)}
+.tog-box{
+  width:16px;height:16px;border-radius:4px;
+  border:1px solid var(--muted2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.tog.on .tog-box{border-color:var(--teal);background:var(--teal)}
+.tog-box svg{display:none}
+.tog.on .tog-box svg{display:block}
+.tog-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--muted);letter-spacing:1px;line-height:1.4;
+}
+.tog.on .tog-label{color:var(--teal)}
+
+/* RUN BTN */
+.run-wrap{padding-top:4px}
+.run-btn{
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  color:#080c14;border:none;cursor:pointer;
+  border-radius:10px;font-family:'Outfit',sans-serif;
+  font-size:16px;font-weight:800;letter-spacing:1px;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.run-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+}
+.run-btn:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,229,200,0.35);
+}
+.run-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.run-btn .bt{display:block}
+.run-btn .bs{display:none;align-items:center;justify-content:center;gap:10px}
+.run-btn.loading .bt{display:none}
+.run-btn.loading .bs{display:flex}
+.ring{width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.3);border-top-color:#080c14;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.err-strip{margin:0 32px 16px;padding:12px 16px;background:#fef2f2;border-left:3px solid var(--red);font-family:'Space Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;line-height:1.6;display:none}
-.results-col{display:flex;flex-direction:column;min-height:600px}
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:64px;text-align:center}
-.empty-rule{width:1px;height:72px;background:linear-gradient(to bottom,transparent,var(--rule),transparent);margin:0 auto}
-.bat-cap{width:18px;height:6px;border:2px solid var(--rule2);border-bottom:none;border-radius:2px 2px 0 0;margin:0 auto}
-.bat-idle{width:44px;height:80px;border:2px solid var(--rule2);border-radius:3px;margin:0 auto;position:relative;overflow:hidden}
-.bat-level{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--rule2),#ccc);transition:height .8s ease}
-.bat-pct-idle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:9px;color:var(--mid)}
-.empty-h{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;font-style:italic;color:var(--rule)}
-.empty-p{font-family:'Space Mono',monospace;font-size:9px;color:var(--rule);letter-spacing:2px;text-transform:uppercase;max-width:240px;line-height:1.8}
-.results-body{display:none;flex-direction:column}
-.results-body.on{display:flex}
-.res-head{padding:18px 40px;border-bottom:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between;background:var(--paper)}
-.res-head-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);text-transform:uppercase}
-.viab-pill{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:6px 14px;border:1px solid}
-.viab-pill.strong{border-color:var(--green);color:var(--green);background:rgba(26,107,58,.05)}
-.viab-pill.moderate{border-color:var(--blue);color:var(--blue);background:rgba(26,63,107,.05)}
-.viab-pill.marginal{border-color:var(--mid);color:var(--mid)}
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--ink)}
-.sr-cell{padding:24px 20px;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:6px}
-.sr-cell:last-child{border-right:none}
-.sr-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#fff;line-height:1}
-.sr-num.grn{color:#6ee7a0}
-.sr-num.blu{color:#7ab8ff}
-.sr-unit{font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.3);letter-spacing:2px}
-.sr-label{font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
-.res-section{padding:28px 40px;border-bottom:1px solid var(--rule2)}
-.res-section:last-child{border-bottom:none}
-.rs-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:4px;color:var(--mid);text-transform:uppercase;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between}
-.rs-cite{font-size:7px;color:var(--rule);letter-spacing:1px}
-.sizing-display{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start}
-.bat-result{display:flex;flex-direction:column;align-items:center;gap:4px}
-.bat-r-cap{width:22px;height:6px;background:var(--rule2);border-radius:2px 2px 0 0;margin:0 auto}
-.bat-r-body{width:56px;height:100px;border:2px solid var(--rule);border-radius:3px;position:relative;overflow:hidden}
-.bat-r-fill{position:absolute;bottom:0;left:0;right:0;height:0%;transition:height 1.8s cubic-bezier(.4,0,.2,1);background:linear-gradient(to top,var(--ink),var(--ink3))}
-.bat-r-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;color:#fff;z-index:2;mix-blend-mode:difference}
-.bat-r-label{font-family:'Space Mono',monospace;font-size:7px;color:var(--mid);letter-spacing:2px;text-align:center;margin-top:4px}
-.sizing-specs{display:flex;flex-direction:column}
-.spec-row{display:grid;grid-template-columns:1fr auto;padding:11px 0;border-bottom:1px solid var(--rule2);align-items:baseline}
+.err-bar{
+  margin-top:10px;padding:12px 16px;
+  background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);
+  border-radius:8px;font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--red);letter-spacing:1px;line-height:1.6;display:none;
+}
+
+/* RESULTS */
+.results-card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:16px;
+  backdrop-filter:blur(12px);
+  min-height:600px;
+  display:flex;flex-direction:column;
+}
+
+/* EMPTY */
+.empty{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:24px;padding:60px;text-align:center;
+}
+.bat-wrap{position:relative;width:56px}
+.bat-cap-e{
+  width:22px;height:8px;background:rgba(255,255,255,0.08);
+  border-radius:3px 3px 0 0;margin:0 auto;
+}
+.bat-body-e{
+  width:56px;height:96px;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:6px;position:relative;overflow:hidden;
+  background:rgba(255,255,255,0.03);
+}
+.bat-fill-e{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(0,229,200,0.6),rgba(0,229,200,0.2));
+  transition:height .8s ease;
+}
+.bat-glow{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:40px;height:40px;
+  background:radial-gradient(circle,rgba(0,229,200,0.3),transparent 70%);
+  pointer-events:none;
+}
+.bat-pct-e{
+  position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:rgba(255,255,255,0.6);
+}
+.empty-title{
+  font-size:20px;font-weight:600;color:var(--muted);letter-spacing:-0.3px;
+}
+.empty-sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--muted2);
+  text-transform:uppercase;max-width:220px;line-height:2;
+}
+
+/* RESULTS BODY */
+.rbody{display:none;flex-direction:column;flex:1}
+.rbody.on{display:flex}
+
+/* TOP BAR */
+.rbar{
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,229,200,0.03);
+}
+.rbar-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;
+}
+.viab-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  padding:5px 14px;border-radius:20px;border:1px solid;
+}
+.viab-tag.strong{border-color:rgba(34,211,160,0.4);color:var(--green);background:rgba(34,211,160,0.08)}
+.viab-tag.moderate{border-color:rgba(77,166,255,0.4);color:var(--blue);background:rgba(77,166,255,0.08)}
+.viab-tag.marginal{border-color:var(--border);color:var(--muted)}
+
+/* KEY METRICS */
+.kmetrics{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--border);
+}
+.km{
+  padding:22px 18px;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;
+}
+.km:last-child{border-right:none}
+.km-val{
+  font-size:28px;font-weight:800;letter-spacing:-1px;
+  color:var(--text);line-height:1;
+}
+.km-val.tc{color:var(--teal)}
+.km-val.gc{color:var(--green)}
+.km-val.bc{color:var(--blue)}
+.km-unit{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:1px}
+.km-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+/* SECTIONS */
+.rsec{padding:22px 24px;border-bottom:1px solid var(--border)}
+.rsec:last-child{border-bottom:none}
+.sec-h{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.sec-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-title::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal)}
+.sec-cite{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:1px}
+
+/* BATTERY + SPECS */
+.bess-layout{display:flex;gap:20px;align-items:flex-start}
+.bat-result-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.bat-r-cap{width:22px;height:7px;background:rgba(255,255,255,0.08);border-radius:3px 3px 0 0;margin:0 auto}
+.bat-r-body{
+  width:58px;height:106px;
+  border:1px solid rgba(0,229,200,0.3);
+  border-radius:6px;position:relative;overflow:hidden;
+  background:rgba(0,229,200,0.03);
+}
+.bat-r-fill{
+  position:absolute;bottom:0;left:0;right:0;height:0%;
+  background:linear-gradient(to top,var(--teal),rgba(0,229,200,0.4));
+  transition:height 1.8s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 20px rgba(0,229,200,0.3);
+}
+.bat-r-pct{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--text);z-index:2;font-weight:500;
+}
+.bat-r-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;
+}
+.specs-list{flex:1;display:flex;flex-direction:column;gap:0}
+.spec-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
 .spec-row:last-child{border-bottom:none}
-.spec-k{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:2px;text-transform:uppercase}
-.spec-v{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink)}
-.spec-v small{font-size:11px;font-weight:400;color:var(--mid);margin-left:3px}
-.sav-list{display:flex;flex-direction:column;gap:16px}
-.sav-item{display:flex;flex-direction:column;gap:6px}
-.sav-head{display:flex;justify-content:space-between;align-items:baseline}
-.sav-label{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:2px;text-transform:uppercase}
-.sav-val{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink)}
-.sav-track{height:3px;background:var(--rule2)}
-.sav-fill{height:100%;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
-.sav-fill.d{background:var(--ink)}
-.sav-fill.t{background:var(--blue)}
-.sav-fill.u{background:var(--amber)}
-.scen-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.scen-table{width:100%;border-collapse:collapse;min-width:540px}
-.scen-table th{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);padding:10px 14px;text-align:right;border-bottom:2px solid var(--ink);background:var(--paper)}
-.scen-table th:first-child{text-align:left}
-.scen-table td{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink3);padding:13px 14px;text-align:right;border-bottom:1px solid var(--rule2)}
-.scen-table td:first-child{text-align:left;font-weight:700}
-.scen-table tr.mid-row{background:var(--paper)}
-.scen-table tr.mid-row td:first-child{border-left:3px solid var(--ink)}
-.rec-badge{display:inline-block;background:var(--ink);color:var(--white);font-size:6px;padding:2px 5px;letter-spacing:2px;vertical-align:middle;margin-left:5px}
-.td-g{color:var(--green)}
-.td-b{color:var(--blue)}
-.itc-display{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
-.itc-big{font-family:'Playfair Display',serif;font-size:68px;font-weight:900;line-height:1;color:var(--ink)}
-.itc-big small{font-size:24px}
-.itc-breakdown{flex:1;display:flex;flex-direction:column;gap:4px;padding-top:8px;min-width:200px}
-.itc-line{display:flex;gap:10px;align-items:center;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--mid);padding:8px 0;border-bottom:1px solid var(--rule2)}
-.itc-line.active{color:var(--ink)}
-.itc-dot{width:8px;height:8px;border-radius:50%;background:var(--rule2);flex-shrink:0}
-.itc-line.active .itc-dot{background:var(--ink)}
-.itc-amt{margin-left:auto;font-weight:700}
-.viab-note{padding:18px 22px;background:var(--paper);border-left:3px solid var(--ink);font-style:italic;font-size:15px;color:var(--ink3);line-height:1.6}
-.src-toggle{background:none;border:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);display:flex;align-items:center;gap:6px;padding:0;transition:color .2s}
-.src-toggle:hover{color:var(--ink)}
-.src-body{display:none;margin-top:14px}
-.src-body.open{display:block}
-.src-row{padding:7px 0;border-bottom:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);line-height:1.8;letter-spacing:.5px}
-.src-row span{color:var(--ink);font-weight:700}
-.src-row:last-child{border-bottom:none}
-.overlay{display:none;position:fixed;inset:0;background:rgba(10,10,10,.85);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.spec-k{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.spec-v{font-size:17px;font-weight:700;color:var(--text)}
+.spec-v small{font-size:10px;font-weight:400;color:var(--muted);margin-left:3px}
+
+/* SAVINGS BARS */
+.savbars{display:flex;flex-direction:column;gap:14px}
+.savrow{display:flex;flex-direction:column;gap:6px}
+.savtop{display:flex;justify-content:space-between;align-items:baseline}
+.savlabel{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.savval{font-size:17px;font-weight:700;color:var(--text)}
+.savtrack{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.savfill{height:100%;border-radius:2px;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.savfill.d{background:linear-gradient(90deg,var(--teal),var(--teal2))}
+.savfill.t{background:linear-gradient(90deg,var(--blue),var(--purple))}
+.savfill.u{background:linear-gradient(90deg,var(--amber),var(--red))}
+
+/* SCENARIO TABLE */
+.scen-scroll{overflow-x:auto}
+.stab{width:100%;border-collapse:collapse;min-width:520px}
+.stab th{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted);padding:10px 14px;text-align:right;
+  border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,0.2);
+}
+.stab th:first-child{text-align:left}
+.stab td{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--text);
+  padding:13px 14px;text-align:right;
+  border-bottom:1px solid var(--border);
+}
+.stab td:first-child{text-align:left;font-weight:600}
+.stab tr.midrow td{background:rgba(0,229,200,0.04)}
+.stab tr.midrow td:first-child{border-left:2px solid var(--teal)}
+.rec{
+  display:inline-block;font-size:7px;letter-spacing:2px;
+  background:var(--teal);color:#080c14;
+  padding:2px 6px;border-radius:3px;margin-left:6px;font-weight:700;
+}
+.tg{color:var(--green)}
+.tb{color:var(--blue)}
+
+/* ITC */
+.itc-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.itc-num{
+  font-size:72px;font-weight:900;line-height:1;letter-spacing:-3px;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  flex-shrink:0;
+}
+.itc-num small{font-size:28px;letter-spacing:0}
+.itc-lines{flex:1;display:flex;flex-direction:column;gap:0;padding-top:6px;min-width:180px}
+.itcl{
+  display:flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted);padding:9px 0;border-bottom:1px solid var(--border);
+  letter-spacing:1px;
+}
+.itcl:last-child{border-bottom:none}
+.itcl.on{color:var(--text)}
+.itcl-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.itcl.on .itcl-dot{background:var(--teal);box-shadow:0 0 6px var(--teal)}
+.itcl-amt{margin-left:auto;font-weight:600}
+.itcl.total .itcl-amt{color:var(--teal)}
+
+/* VIAB NOTE */
+.viab-note{
+  background:rgba(0,229,200,0.05);
+  border:1px solid rgba(0,229,200,0.15);
+  border-radius:8px;padding:14px 18px;
+  font-size:14px;font-weight:300;color:var(--text);
+  line-height:1.65;font-style:italic;
+}
+
+/* SOURCES */
+.src-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;padding:0;transition:color .2s;
+}
+.src-btn:hover{color:var(--teal)}
+.src-wrap{display:none;margin-top:14px;display:none;flex-direction:column;gap:0}
+.src-wrap.open{display:flex}
+.src-item{
+  font-family:'JetBrains Mono',monospace;font-size:8px;
+  color:var(--muted);letter-spacing:.5px;line-height:1.8;
+  padding:7px 0;border-bottom:1px solid var(--border);
+}
+.src-item:last-child{border-bottom:none}
+.src-item span{color:var(--teal);font-weight:600}
+
+/* MODAL */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(8,12,20,0.85);backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;
+}
 .overlay.open{display:flex}
-.modal{background:var(--white);border:2px solid var(--ink);width:92%;max-width:900px;max-height:92vh;overflow-y:auto}
-.modal-top{padding:26px 36px 18px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between}
-.modal-h{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;letter-spacing:2px}
-.modal-x{background:none;border:1px solid var(--rule);width:36px;height:36px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-x:hover{border-color:var(--ink);background:var(--ink);color:var(--white)}
-.modal-note{padding:14px 36px;background:var(--paper);border-bottom:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--mid);line-height:2;text-transform:uppercase}
-.modal-note strong{color:var(--red)}
-.plans-cols{display:grid;grid-template-columns:repeat(3,1fr)}
-.plan{padding:28px;border-right:1px solid var(--rule2);display:flex;flex-direction:column;gap:14px}
+.modal{
+  background:#0d1525;border:1px solid var(--border2);
+  border-radius:20px;width:92%;max-width:880px;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-top{
+  padding:28px 32px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-h{font-size:24px;font-weight:800;letter-spacing:-0.5px}
+.modal-x{
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--muted);width:36px;height:36px;border-radius:8px;
+  cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.modal-x:hover{border-color:var(--teal);color:var(--teal)}
+.modal-note{
+  padding:14px 32px;background:rgba(0,229,200,0.04);
+  border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:2px;color:var(--muted);line-height:2;text-transform:uppercase;
+}
+.modal-note strong{color:var(--teal)}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.plan{
+  padding:28px 24px;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:14px;
+}
 .plan:last-child{border-right:none}
-.plan.pro{background:var(--paper)}
-.plan-tier{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:4px;color:var(--mid);text-transform:uppercase}
-.plan.pro .plan-tier{color:var(--red)}
-.plan-name{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--ink)}
-.plan-price{font-family:'Space Mono',monospace;font-size:9px;color:var(--mid);letter-spacing:1px;border-top:1px solid var(--rule2);padding-top:10px}
-.plan-feats{flex:1;display:flex;flex-direction:column;gap:6px}
-.pf{display:flex;gap:8px;align-items:flex-start;font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;line-height:1.5;padding:6px 0;border-bottom:1px solid var(--rule2)}
-.pf::before{content:'→';color:var(--ink);flex-shrink:0;margin-top:1px}
-.plan-btn{display:block;text-align:center;padding:12px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;border:1px solid var(--rule);color:var(--mid);transition:all .2s}
-.plan-btn:hover{border-color:var(--ink);color:var(--ink)}
-.plan.pro .plan-btn{background:var(--ink);color:var(--white);border-color:var(--ink)}
-.plan.pro .plan-btn:hover{background:var(--red);border-color:var(--red)}
-.white-only{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--red);text-transform:uppercase;padding:3px 7px;border:1px solid var(--red);display:inline-block;margin-bottom:3px}
-.modal-foot{padding:16px 36px;border-top:1px solid var(--rule2);font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px;text-align:center}
-.modal-foot a{color:var(--red);text-decoration:none}
-.site-foot{padding:22px 56px;border-top:1px solid var(--rule2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-.sf-left{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);letter-spacing:1px}
-.sf-left strong{color:var(--ink)}
+.plan.pro{background:rgba(0,229,200,0.03)}
+.plan-tier{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;
+}
+.plan.pro .plan-tier{color:var(--teal)}
+.plan-name{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+.plan-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--muted);letter-spacing:1px;
+  border-top:1px solid var(--border);padding-top:10px;
+}
+.plan-feats{flex:1;display:flex;flex-direction:column;gap:0}
+.pf{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted);letter-spacing:1px;line-height:1.5;
+  padding:7px 0;border-bottom:1px solid var(--border);
+  display:flex;gap:8px;align-items:flex-start;
+}
+.pf::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
+.plan-btn{
+  display:block;text-align:center;padding:12px;border-radius:8px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;text-decoration:none;
+  border:1px solid var(--border2);color:var(--muted);transition:all .2s;
+}
+.plan-btn:hover{border-color:var(--teal);color:var(--teal)}
+.plan.pro .plan-btn{
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  color:#080c14;border-color:transparent;font-weight:700;
+}
+.plan.pro .plan-btn:hover{box-shadow:0 4px 20px rgba(0,229,200,0.3)}
+.wl-badge{
+  font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;
+  color:var(--teal);border:1px solid rgba(0,229,200,0.3);
+  background:rgba(0,229,200,0.06);padding:4px 10px;border-radius:4px;
+  text-transform:uppercase;display:inline-block;margin-bottom:4px;
+}
+.modal-foot{
+  padding:16px 32px;border-top:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted);letter-spacing:1px;text-align:center;
+}
+.modal-foot a{color:var(--teal);text-decoration:none}
+
+/* FOOTER */
+.site-foot{
+  position:relative;z-index:5;
+  border-top:1px solid var(--border);
+  padding:22px 40px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  background:rgba(8,12,20,0.6);
+}
+.sf-l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
+.sf-l strong{color:var(--teal)}
 .sf-links{display:flex;gap:18px}
-.sf-links a{font-family:'Space Mono',monospace;font-size:8px;color:var(--mid);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
-.sf-links a:hover{color:var(--red)}
-.disclaimer{padding:0 56px 24px;font-family:'Space Mono',monospace;font-size:7px;color:var(--rule);letter-spacing:1px;line-height:2;max-width:900px}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.ani{animation:fadeIn .4s ease both}
-.ani-1{animation-delay:.04s}.ani-2{animation-delay:.09s}.ani-3{animation-delay:.14s}
-.ani-4{animation-delay:.19s}.ani-5{animation-delay:.24s}.ani-6{animation-delay:.29s}
-@media(max-width:880px){
-  .masthead{padding:0 16px;grid-template-columns:auto 1fr auto}
-  .mast-left{display:none}
-  .hero{grid-template-columns:1fr}
-  .hero-right{display:none}
-  .workspace{grid-template-columns:1fr}
-  .form-col{border-right:none;border-bottom:1px solid var(--rule)}
-  .stat-row{grid-template-columns:repeat(2,1fr)}
-  .plans-cols{grid-template-columns:1fr}
-  .plan{border-right:none;border-bottom:1px solid var(--rule2)}
-  .site-foot,.disclaimer{padding-left:16px;padding-right:16px}
-  .res-section{padding:20px 18px}
+.sf-links a{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+.sf-links a:hover{color:var(--teal)}
+.disc{
+  position:relative;z-index:5;
+  padding:0 40px 28px;
+  font-family:'JetBrains Mono',monospace;font-size:8px;
+  color:var(--muted2);letter-spacing:1px;line-height:2;max-width:900px;
+}
+
+/* ANIMATIONS */
+@keyframes fi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.an{animation:fi .45s ease both}
+.an1{animation-delay:.04s}.an2{animation-delay:.09s}.an3{animation-delay:.14s}
+.an4{animation-delay:.19s}.an5{animation-delay:.24s}.an6{animation-delay:.29s}
+
+@media(max-width:900px){
+  nav{padding:0 20px}
+  .nav-center,.nav-link{display:none}
+  .hero{grid-template-columns:1fr;gap:40px;padding:48px 20px 40px}
+  .hero-stats{display:none}
+  .workspace{grid-template-columns:1fr;padding:0 20px 60px}
+  .kmetrics{grid-template-columns:repeat(2,1fr)}
+  .plans-grid{grid-template-columns:1fr}
+  .plan{border-right:none;border-bottom:1px solid var(--border)}
+  .site-foot,.disc{padding-left:20px;padding-right:20px}
+  .rsec{padding:18px}
+  .bess-layout{flex-direction:column}
+  .ticker{padding:10px 20px}
 }
 </style>
 </head>
 <body>
-<header class="masthead">
-  <nav class="mast-left">
-    <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
-    <span class="mast-sep">·</span>
-    <a href="https://solartruth.app" target="_blank">Portfolio</a>
-    <span class="mast-sep">·</span>
-    <a href="mailto:support@solartruth.app">Contact</a>
-  </nav>
-  <div class="logo-wrap">
-    <div class="logo-main">BESS<span>iq</span></div>
-    <div class="logo-sub">Battery Storage Sizing Intelligence</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="b">BESS</span><span class="rest">iq</span>
+    <span class="iq">BETA</span>
   </div>
-  <div class="mast-right">
-    <div class="live-ind">API LIVE</div>
-    <button class="btn-access" onclick="openPlans()">Plans &amp; Access</button>
+  <div class="nav-center">
+    <div class="dot-live"></div>
+    <span>API ONLINE</span>
   </div>
-</header>
-<div class="issue-line">
-  <div class="issue-item">NREL ATB 2024</div>
-  <div class="issue-item">PNNL-33283</div>
-  <div class="marquee-wrap"><div class="marquee-inner">
-    <span>IRA 2022 §48E ITC STACKING TO 50%</span>
-    <span>LOAD DURATION CURVE SIZING · NEUBAUER &amp; SIMPSON 2015</span>
-    <span>AC-AC RTE PER ATB2024b · COLE &amp; KARMAKAR 2023</span>
-    <span>OPENEI UTILITY RATE DATABASE · 26 US STATES</span>
-    <span>LFP · NMC · LFP LONG-DURATION · 3 CHEMISTRIES</span>
-    <span>IRA 2022 §48E ITC STACKING TO 50%</span>
-    <span>LOAD DURATION CURVE SIZING · NEUBAUER &amp; SIMPSON 2015</span>
-    <span>AC-AC RTE PER ATB2024b · COLE &amp; KARMAKAR 2023</span>
-    <span>OPENEI UTILITY RATE DATABASE · 26 US STATES</span>
-    <span>LFP · NMC · LFP LONG-DURATION · 3 CHEMISTRIES</span>
-  </div></div>
-  <div class="issue-item">V2.0</div>
+  <div class="nav-right">
+    <a class="nav-link" href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
+    <a class="nav-link" href="mailto:support@solartruth.app">Contact</a>
+    <button class="btn-plans" onclick="openPlans()">Plans &amp; Access</button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-label">SOURCES</div>
+  <div class="ticker-scroll">
+    <div class="ticker-inner">
+      <span>NREL ATB 2024 Commercial BESS</span>
+      <span>PNNL-33283 Mongird et al. 2022</span>
+      <span>IRA 2022 §48E ITC Stacking to 50%</span>
+      <span>Cole &amp; Karmakar 2023 NREL/TP-6A40-85332</span>
+      <span>Neubauer &amp; Simpson 2015 NREL/TP-5400-63162</span>
+      <span>OpenEI Utility Rate Database 2024</span>
+      <span>Luthander et al. 2015 Renewable Energy 76</span>
+      <span>Jordan &amp; Kurtz 2013 Progress in PV</span>
+      <span>NREL ATB 2024 Commercial BESS</span>
+      <span>PNNL-33283 Mongird et al. 2022</span>
+      <span>IRA 2022 §48E ITC Stacking to 50%</span>
+      <span>Cole &amp; Karmakar 2023 NREL/TP-6A40-85332</span>
+      <span>Neubauer &amp; Simpson 2015 NREL/TP-5400-63162</span>
+      <span>OpenEI Utility Rate Database 2024</span>
+      <span>Luthander et al. 2015 Renewable Energy 76</span>
+      <span>Jordan &amp; Kurtz 2013 Progress in PV</span>
+    </div>
+  </div>
 </div>
+
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-left">
-    <div>
-      <div class="hero-kicker">Commercial &amp; Industrial · Battery Storage Economics</div>
-      <h1 class="hero-h1">Size your<br>storage.<br><em>Defend your<br>numbers.</em></h1>
-      <p class="hero-deck">Every figure cited to its primary government source. NREL CAPEX. PNNL LCOS. IRA 2022 ITC. No black boxes.</p>
+  <div>
+    <div class="hero-tag">Battery Storage Sizing Intelligence</div>
+    <h1 class="hero-h1">
+      Size your storage.<br>
+      <span class="grad">Defend your numbers.</span>
+    </h1>
+    <p class="hero-sub">Every figure cited to its primary government source. NREL ATB 2024 CAPEX. PNNL LCOS validation. IRA 2022 ITC stacking to 50%. No black boxes. No vendor lock-in.</p>
+    <div class="hero-pills">
+      <span class="pill">NREL ATB 2024</span>
+      <span class="pill">PNNL-33283</span>
+      <span class="pill">IRA 2022 §48E</span>
+      <span class="pill">OpenEI Rates</span>
+      <span class="pill">3 Chemistries</span>
     </div>
-    <div class="hero-byline">Powered by Solar + BESS Sizing API · <span>rapidapi.com/user/bethelnedi</span></div>
   </div>
-  <div class="hero-right">
-    <div>
-      <div class="stat-item"><span class="stat-label">ATB Cost Scenarios</span><span class="stat-val">3 <small>scenarios</small></span></div>
-      <div class="stat-item"><span class="stat-label">Max ITC Credit</span><span class="stat-val">50<small>%</small></span></div>
-      <div class="stat-item"><span class="stat-label">Primary Sources</span><span class="stat-val">14 <small>citations</small></span></div>
-      <div class="stat-item"><span class="stat-label">Battery Chemistries</span><span class="stat-val">3 <small>types</small></span></div>
-      <div class="stat-item"><span class="stat-label">States Covered</span><span class="stat-val">26 <small>US states</small></span></div>
-    </div>
+  <div class="hero-stats">
+    <div class="hstat"><span class="hstat-l">ATB Cost Scenarios</span><span class="hstat-v">3<span class="hstat-u">scenarios</span></span></div>
+    <div class="hstat"><span class="hstat-l">Max ITC Credit</span><span class="hstat-v">50<span class="hstat-u">%</span></span></div>
+    <div class="hstat"><span class="hstat-l">Primary Sources</span><span class="hstat-v">14<span class="hstat-u">citations</span></span></div>
+    <div class="hstat"><span class="hstat-l">Battery Chemistries</span><span class="hstat-v">3<span class="hstat-u">types</span></span></div>
+    <div class="hstat"><span class="hstat-l">States Covered</span><span class="hstat-v">26<span class="hstat-u">US states</span></span></div>
   </div>
 </section>
+
+<!-- WORKSPACE -->
 <div class="workspace">
-  <div class="form-col">
-    <div class="col-head"><span class="col-head-title">Site Parameters</span><span class="col-num">§ 01</span></div>
-    <div class="form-inner">
-      <div class="f-row">
-        <div class="f">
-          <label>Peak Demand <span class="req">*</span></label>
-          <input id="peak" type="number" value="250" min="10" max="50000">
-          <span class="f-hint">kW</span>
+
+  <!-- FORM CARD -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Site Parameters</span>
+      <span class="card-num">§ 01</span>
+    </div>
+    <div class="card-body">
+      <div class="fstack">
+
+        <div class="frow">
+          <div class="field">
+            <label>Peak Demand <span class="req">*</span></label>
+            <input id="peak" type="number" value="250" min="10" max="50000" placeholder="250">
+            <span class="f-hint">kW</span>
+          </div>
+          <div class="field">
+            <label>State <span class="req">*</span></label>
+            <select id="state">
+              <option value="CA">California</option><option value="NY">New York</option>
+              <option value="MA">Massachusetts</option><option value="NJ">New Jersey</option>
+              <option value="IL">Illinois</option><option value="MD">Maryland</option>
+              <option value="CT">Connecticut</option><option value="RI">Rhode Island</option>
+              <option value="PA">Pennsylvania</option><option value="AZ">Arizona</option>
+              <option value="FL">Florida</option><option value="CO">Colorado</option>
+              <option value="NV">Nevada</option><option value="TX" selected>Texas</option>
+              <option value="GA">Georgia</option><option value="NC">North Carolina</option>
+              <option value="VA">Virginia</option><option value="OH">Ohio</option>
+              <option value="MI">Michigan</option><option value="MN">Minnesota</option>
+              <option value="WI">Wisconsin</option><option value="WA">Washington</option>
+              <option value="OR">Oregon</option><option value="ID">Idaho</option>
+              <option value="MT">Montana</option><option value="UT">Utah</option>
+            </select>
+          </div>
         </div>
-        <div class="f">
-          <label>State <span class="req">*</span></label>
-          <select id="state">
-            <option value="CA">California</option><option value="NY">New York</option>
-            <option value="MA">Massachusetts</option><option value="NJ">New Jersey</option>
-            <option value="IL">Illinois</option><option value="MD">Maryland</option>
-            <option value="CT">Connecticut</option><option value="RI">Rhode Island</option>
-            <option value="PA">Pennsylvania</option><option value="AZ">Arizona</option>
-            <option value="FL">Florida</option><option value="CO">Colorado</option>
-            <option value="NV">Nevada</option><option value="TX" selected>Texas</option>
-            <option value="GA">Georgia</option><option value="NC">North Carolina</option>
-            <option value="VA">Virginia</option><option value="OH">Ohio</option>
-            <option value="MI">Michigan</option><option value="MN">Minnesota</option>
-            <option value="WI">Wisconsin</option><option value="WA">Washington</option>
-            <option value="OR">Oregon</option><option value="ID">Idaho</option>
-            <option value="MT">Montana</option><option value="UT">Utah</option>
+
+        <div class="frow">
+          <div class="field">
+            <label>Electricity Rate <span class="req">*</span></label>
+            <input id="rate" type="number" value="0.085" step="0.001" min="0.01" max="2">
+            <span class="f-hint">$/kWh blended</span>
+          </div>
+          <div class="field">
+            <label>Annual Consumption</label>
+            <input id="cons" type="number" value="2800000" placeholder="kWh/yr">
+            <span class="f-hint">Pro — unlocks optimal</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Battery Chemistry</label>
+          <select id="chem">
+            <option value="lfp" selected>LFP — Lithium Iron Phosphate (4h)</option>
+            <option value="nmc">NMC — Nickel Manganese Cobalt (4h)</option>
+            <option value="lfp_long">LFP Long-Duration (6–8h)</option>
           </select>
         </div>
-      </div>
-      <div class="f-row">
-        <div class="f">
-          <label>Electricity Rate <span class="req">*</span></label>
-          <input id="rate" type="number" value="0.085" step="0.001" min="0.01" max="2">
-          <span class="f-hint">$/kWh blended</span>
-        </div>
-        <div class="f">
-          <label>Annual Consumption</label>
-          <input id="cons" type="number" value="2800000">
-          <span class="f-hint">kWh/yr · Pro</span>
-        </div>
-      </div>
-      <div class="f">
-        <label>Battery Chemistry</label>
-        <select id="chem">
-          <option value="lfp" selected>LFP — Lithium Iron Phosphate (4h)</option>
-          <option value="nmc">NMC — Nickel Manganese Cobalt (4h)</option>
-          <option value="lfp_long">LFP Long-Duration (6–8h)</option>
-        </select>
-      </div>
-      <div class="f-row">
-        <div class="f">
-          <label>Discharge Hours</label>
-          <input id="hrs" type="number" value="4.0" step="0.5" min="1" max="8">
-          <span class="f-hint">1–8 hours</span>
-        </div>
-        <div class="f">
-          <label>Shave Target</label>
-          <input id="shave" type="number" value="0.20" step="0.05" min="0.05" max="0.50">
-          <span class="f-hint">fraction of peak</span>
-        </div>
-      </div>
-      <div class="key-box">
-        <div class="key-box-head">
-          RapidAPI Key <span style="color:var(--red);font-size:7px">REQUIRED</span>
-          <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get key →</a>
-        </div>
-        <div class="f">
-          <input id="apikey" type="password" placeholder="Paste your RapidAPI key here">
-        </div>
-        <div class="key-note">Free key = quick sizing · Pro key = all 3 ATB scenarios + NPV/IRR + ITC stacking. RapidAPI requires a key even on the free tier to route requests.</div>
-      </div>
-      <div class="f">
-        <label>IRA 2022 ITC Adders <span style="color:var(--rule)">Pro</span></label>
-        <div class="toggle-grid">
-          <div class="tog" id="tog-dc" onclick="this.classList.toggle('on')">
-            <div class="tog-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-            <span class="tog-text">Domestic Content +10%</span>
+
+        <div class="frow">
+          <div class="field">
+            <label>Discharge Hours</label>
+            <input id="hrs" type="number" value="4.0" step="0.5" min="1" max="8">
+            <span class="f-hint">1–8 hours</span>
           </div>
-          <div class="tog" id="tog-ec" onclick="this.classList.toggle('on')">
-            <div class="tog-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-            <span class="tog-text">Energy Community +10%</span>
+          <div class="field">
+            <label>Shave Target</label>
+            <input id="shave" type="number" value="0.20" step="0.05" min="0.05" max="0.50">
+            <span class="f-hint">fraction of peak</span>
           </div>
         </div>
+
+        <div class="key-box">
+          <div class="key-head">
+            RapidAPI Key <span style="font-size:8px;color:rgba(0,229,200,0.6)">REQUIRED</span>
+            <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get free key →</a>
+          </div>
+          <div class="field">
+            <input id="apikey" type="password" placeholder="Paste your RapidAPI key (free or Pro)">
+          </div>
+          <div class="key-note">Free key → quick sizing · Pro key → all 3 ATB scenarios + NPV/IRR + ITC stacking. RapidAPI requires a key on all tiers to route requests.</div>
+        </div>
+
+        <div class="field">
+          <label>IRA 2022 ITC Adders <span style="color:var(--muted2)">Pro</span></label>
+          <div class="togrow">
+            <div class="tog" id="tog-dc" onclick="this.classList.toggle('on')">
+              <div class="tog-box">
+                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                  <path d="M1 3.5L3.5 6L8 1" stroke="#080c14" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="tog-label">Domestic Content +10%</span>
+            </div>
+            <div class="tog" id="tog-ec" onclick="this.classList.toggle('on')">
+              <div class="tog-box">
+                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                  <path d="M1 3.5L3.5 6L8 1" stroke="#080c14" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="tog-label">Energy Community +10%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="run-wrap">
+          <button class="run-btn" id="runBtn" onclick="go()">
+            <span class="bt">Run Analysis</span>
+            <span class="bs"><span class="ring"></span> Analysing…</span>
+          </button>
+          <div class="err-bar" id="errBar"></div>
+        </div>
+
       </div>
-    </div>
-    <div class="err-strip" id="errStrip"></div>
-    <div class="run-wrap">
-      <button class="run-btn" id="runBtn" onclick="go()">
-        <span class="btext">Run Analysis</span>
-        <span class="bspin"><span class="ring"></span> Analysing…</span>
-      </button>
     </div>
   </div>
-  <div class="results-col" id="resultsCol">
-    <div class="col-head"><span class="col-head-title">Analysis Output</span><span class="col-num">§ 02</span></div>
-    <div class="empty-state" id="emptyState">
-      <div class="empty-rule"></div>
+
+  <!-- RESULTS CARD -->
+  <div class="results-card" id="resCard">
+    <div class="card-head">
+      <span class="card-title">Analysis Output</span>
+      <span class="card-num">§ 02</span>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty" id="emptyState">
       <div>
-        <div class="bat-cap"></div>
-        <div class="bat-idle" id="batIdle">
-          <div class="bat-level" id="batIdleLevel"></div>
-          <div class="bat-pct-idle" id="batIdlePct">—</div>
+        <div class="bat-cap-e"></div>
+        <div class="bat-body-e" id="batIdle">
+          <div class="bat-fill-e" id="batFillE"></div>
+          <div class="bat-glow"></div>
+          <div class="bat-pct-e" id="batPctE">—</div>
         </div>
       </div>
-      <h2 class="empty-h">Awaiting input</h2>
-      <p class="empty-p">Enter site parameters and run the analysis</p>
-      <div class="empty-rule"></div>
+      <div class="empty-title">Awaiting analysis</div>
+      <div class="empty-sub">Enter site parameters and run</div>
     </div>
-    <div class="results-body" id="resBody"></div>
+
+    <!-- RESULTS -->
+    <div class="rbody" id="rbody"></div>
   </div>
+
 </div>
+
+<!-- FOOTER -->
 <footer class="site-foot">
-  <div class="sf-left">© 2025 <strong>Tinashe Nedi</strong> · Powered by Solar + BESS Sizing API</div>
+  <div class="sf-l">© 2025 <strong>Tinashe Nedi</strong> · Powered by Solar + BESS Sizing API</div>
   <div class="sf-links">
     <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">API Access</a>
     <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
     <a href="mailto:support@solartruth.app">Contact</a>
   </div>
 </footer>
-<div class="disclaimer">Results based on NREL ATB 2024, PNNL-33283, and OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility depends on project-specific facts; consult a qualified tax professional. Use custom_demand_rate for site-specific accuracy.</div>
+<div class="disc">Results based on NREL ATB 2024, PNNL-33283, and OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility subject to IRS qualification; consult a tax professional. Use custom_demand_rate for site-specific accuracy.</div>
+
+<!-- MODAL -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closePlans()">
   <div class="modal">
-    <div class="modal-top"><div class="modal-h">Plans &amp; Access</div><button class="modal-x" onclick="closePlans()">✕</button></div>
-    <div class="modal-note">API access and platform access are separate. Free · Pro · Ultra — <strong>White label is Ultra only.</strong> Pro subscribers may not embed on a client domain.</div>
-    <div class="plans-cols">
+    <div class="modal-top">
+      <div class="modal-h">Plans &amp; Access</div>
+      <button class="modal-x" onclick="closePlans()">✕</button>
+    </div>
+    <div class="modal-note">
+      API access and platform access are separate. Free · Pro · Ultra — <strong>White label is Ultra only.</strong> Pro subscribers may not embed on a client domain.
+    </div>
+    <div class="plans-grid">
       <div class="plan">
-        <div class="plan-tier">Free</div><div class="plan-name">Basic</div>
+        <div class="plan-tier">Free</div>
+        <div class="plan-name">Basic</div>
         <div class="plan-price">$0 / month · 5 calls/min</div>
         <div class="plan-feats">
           <div class="pf">Quick BESS sizing</div>
@@ -413,7 +965,8 @@ body{background:var(--white);color:var(--ink);font-family:'Lora',Georgia,serif;o
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get Free Key</a>
       </div>
       <div class="plan pro">
-        <div class="plan-tier">★ Recommended</div><div class="plan-name">Pro</div>
+        <div class="plan-tier">★ Recommended</div>
+        <div class="plan-name">Pro</div>
         <div class="plan-price">$99 / month · 1,000 calls/hr</div>
         <div class="plan-feats">
           <div class="pf">All 3 ATB scenarios</div>
@@ -426,8 +979,9 @@ body{background:var(--white);color:var(--ink);font-family:'Lora',Georgia,serif;o
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Subscribe to Pro</a>
       </div>
       <div class="plan">
-        <div class="white-only">White Label</div>
-        <div class="plan-tier">Ultra</div><div class="plan-name">Ultra</div>
+        <div class="wl-badge">★ White Label</div>
+        <div class="plan-tier">Ultra</div>
+        <div class="plan-name">Ultra</div>
         <div class="plan-price">$299 / month · Requires Approval</div>
         <div class="plan-feats">
           <div class="pf">Everything in Pro</div>
@@ -439,161 +993,264 @@ body{background:var(--white);color:var(--ink);font-family:'Lora',Georgia,serif;o
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Apply for Ultra</a>
       </div>
     </div>
-    <div class="modal-foot">All 8 APIs bundled from $249/month · <a href="mailto:support@solartruth.app">support@solartruth.app</a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a></div>
+    <div class="modal-foot">
+      Bundle: all 8 APIs from $249/month ·
+      <a href="mailto:support@solartruth.app">support@solartruth.app</a> ·
+      <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a>
+    </div>
   </div>
 </div>
+
 <script>
 const $=id=>document.getElementById(id);
-const fmt$=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
-const fmtN=(n,d=1)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
+const f$=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const fN=(n,d=1)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
 function openPlans(){$('overlay').classList.add('open')}
 function closePlans(){$('overlay').classList.remove('open')}
-(function(){const l=$('batIdleLevel'),p=$('batIdlePct');if(!l)return;let v=25,up=true;setInterval(()=>{v+=up?.8:-.8;if(v>=65)up=false;if(v<=20)up=true;l.style.height=v+'%';p.textContent=Math.round(v)+'%';},80);})();
-function countUp(el,target,pre='',suf='',dec=0,dur=1100){const t0=performance.now();(function f(now){const p=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-p,3),v=target*ease;el.textContent=pre+fmtN(v,dec)+suf;if(p<1)requestAnimationFrame(f);else el.textContent=pre+fmtN(target,dec)+suf;})(t0);}
-function fillBat(fe,pe,pct){setTimeout(()=>{fe.style.height=pct+'%';let c=0;const iv=setInterval(()=>{c=Math.min(c+2,pct);pe.textContent=c+'%';if(c>=pct)clearInterval(iv);},25);},400);}
-function showErr(m){const e=$('errStrip');e.textContent='⚠ '+m;e.style.display='block';}
-function clearErr(){$('errStrip').style.display='none';}
 
-// IMPORTANT: RapidAPI requires X-RapidAPI-Key on ALL tiers including free
-// The key authenticates you with their proxy — without it you get 403 regardless of plan
+// idle battery
+(function(){
+  const f=$('batFillE'),p=$('batPctE');if(!f)return;
+  let v=20,up=true;
+  setInterval(()=>{
+    v+=up?.7:-.7;if(v>=70)up=false;if(v<=15)up=true;
+    f.style.height=v+'%';p.textContent=Math.round(v)+'%';
+  },80);
+})();
+
+function cntUp(el,target,pre='',suf='',dec=0,dur=1000){
+  const t0=performance.now();
+  (function f(now){
+    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=target*e;
+    el.textContent=pre+fN(v,dec)+suf;
+    if(p<1)requestAnimationFrame(f);
+    else el.textContent=pre+fN(target,dec)+suf;
+  })(t0);
+}
+function fillBat(fe,pe,pct){
+  setTimeout(()=>{
+    fe.style.height=pct+'%';
+    let c=0;const iv=setInterval(()=>{c=Math.min(c+2,pct);pe.textContent=c+'%';if(c>=pct)clearInterval(iv);},25);
+  },400);
+}
+function showErr(m){const e=$('errBar');e.textContent='⚠ '+m;e.style.display='block';}
+function clearErr(){$('errBar').style.display='none';}
+
 const HOST='solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com';
 const BASE='https://'+HOST;
 
 async function go(){
   clearErr();
   const peak=parseFloat($('peak').value),state=$('state').value,
-        rate=parseFloat($('rate').value),cons=parseFloat($('cons').value)||0,
-        chem=$('chem').value,hrs=parseFloat($('hrs').value)||4,
-        shave=parseFloat($('shave').value)||.20,
-        key=$('apikey').value.trim(),
-        dc=$('tog-dc').classList.contains('on'),
-        ec=$('tog-ec').classList.contains('on');
+    rate=parseFloat($('rate').value),cons=parseFloat($('cons').value)||0,
+    chem=$('chem').value,hrs=parseFloat($('hrs').value)||4,
+    shave=parseFloat($('shave').value)||.20,
+    key=$('apikey').value.trim(),
+    dc=$('tog-dc').classList.contains('on'),
+    ec=$('tog-ec').classList.contains('on');
   if(!peak||peak<10){showErr('Peak demand must be at least 10 kW.');return;}
   if(!rate||rate<.01){showErr('Electricity rate is required.');return;}
-  if(!key){showErr('A RapidAPI key is required — free or paid. Get one at rapidapi.com/bethelnedi (the free plan is free, it just needs a key to route through RapidAPI).');return;}
+  if(!key){showErr('A RapidAPI key is required on all plans. Get a free key at rapidapi.com/bethelnedi — takes 30 seconds.');return;}
   const btn=$('runBtn');btn.disabled=true;btn.classList.add('loading');
   const hdrs={'Content-Type':'application/json','X-RapidAPI-Key':key,'X-RapidAPI-Host':HOST};
   const isPro=key.length>15,useFull=isPro&&cons>0;
   try{
-    let data,r;
+    let r;
     if(useFull){
       r=await fetch(BASE+'/bess/optimal',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,annual_kwh_consumption:cons,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave,wacc:.07,domestic_content:dc,energy_community:ec})});
-    } else {
+    }else{
       r=await fetch(BASE+'/bess/quick',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})});
     }
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'API error '+r.status+'. Check your key is correct and your plan has access to this endpoint.');}
-    data=await r.json();data._mode=useFull?'optimal':'quick';
-    render(data);
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'API error '+r.status+'. Verify your key is correct and your plan includes this endpoint.');}
+    const d=await r.json();d._mode=useFull?'optimal':'quick';
+    render(d);
   }catch(err){showErr(err.message||'Connection error. Try again.');}
   finally{btn.disabled=false;btn.classList.remove('loading');}
 }
 
 function render(d){
   $('emptyState').style.display='none';
-  const rb=$('resBody');rb.innerHTML='';rb.classList.add('on');
+  const rb=$('rbody');rb.innerHTML='';rb.classList.add('on');
   const mode=d._mode,sz=d.sizing,ch=d.chemistry,viab=d.viability;
-  let payback,npv,irr,lcos,savings,netCap,totCap,itcPct,itcCredit,demS,touS,solS=0;
+  let payback,lcos,savings,netCap,totCap,itcPct,itcCredit,demS,touS,solS=0;
   if(mode==='optimal'){
     const m=d.atb_scenarios.mid;
-    payback=m.financials.simple_payback_yrs;npv=m.financials.npv_usd;irr=m.financials.irr_pct;
-    lcos=m.lcos.lcos_usd_per_mwh;savings=d.annual_savings.total_annual_savings_usd;
+    payback=m.financials.simple_payback_yrs;lcos=m.lcos.lcos_usd_per_mwh;
+    savings=d.annual_savings.total_annual_savings_usd;
     netCap=m.itc.net_capex_usd;totCap=m.capex.total_capex_usd;
     itcPct=m.itc.itc_rate_pct;itcCredit=m.itc.itc_credit_usd;
     demS=d.annual_savings.demand_charge_savings_usd;
     touS=d.annual_savings.tou_arbitrage_savings_usd;
     solS=d.annual_savings.solar_self_consumption_uplift_usd||0;
-  } else {
+  }else{
     payback=d.financials_mid.simple_payback_yrs;lcos=d.financials_mid.lcos_usd_per_mwh;
     savings=d.annual_savings.total_usd;netCap=d.capex_mid_scenario.net_capex_after_itc_usd;
     totCap=d.capex_mid_scenario.total_capex_usd;itcPct=30;itcCredit=d.capex_mid_scenario.itc_30pct_usd;
     demS=d.annual_savings.demand_charge_usd;touS=d.annual_savings.tou_arbitrage_usd;
   }
 
-  const hd=document.createElement('div');hd.className='res-head ani ani-1';
-  hd.innerHTML=`<div class="res-head-title">${mode==='optimal'?'PRO ANALYSIS — ALL ATB SCENARIOS':'FREE ANALYSIS — MID SCENARIO'}</div><div class="viab-pill ${viab}">${viab.toUpperCase()}</div>`;
-  rb.appendChild(hd);
+  // TOP BAR
+  const bar=document.createElement('div');bar.className='rbar an an1';
+  bar.innerHTML=`<div class="rbar-label">${mode==='optimal'?'Pro Analysis · All ATB Scenarios':'Free Analysis · Mid Scenario'}</div><div class="viab-tag ${viab}">${viab}</div>`;
+  rb.appendChild(bar);
 
-  const sr=document.createElement('div');sr.className='stat-row ani ani-2';
-  sr.innerHTML=`<div class="sr-cell"><div class="sr-num" id="sn-pay">—</div><div class="sr-unit">YEARS</div><div class="sr-label">Simple Payback</div></div>
-  <div class="sr-cell"><div class="sr-num grn" id="sn-sav">—</div><div class="sr-unit">PER YEAR</div><div class="sr-label">Annual Savings</div></div>
-  <div class="sr-cell"><div class="sr-num" id="sn-net">—</div><div class="sr-unit">AFTER ITC</div><div class="sr-label">Net CAPEX</div></div>
-  <div class="sr-cell"><div class="sr-num blu" id="sn-lcos">—</div><div class="sr-unit">$/MWh</div><div class="sr-label">LCOS</div></div>`;
-  rb.appendChild(sr);
-  setTimeout(()=>{countUp($('sn-pay'),payback,'','yr',1);countUp($('sn-sav'),savings,'$','',0);countUp($('sn-net'),netCap,'$','',0);countUp($('sn-lcos'),lcos,'$','',1);},150);
+  // KEY METRICS
+  const km=document.createElement('div');km.className='kmetrics an an2';
+  km.innerHTML=`
+    <div class="km"><div class="km-val tc" id="km-pay">—</div><div class="km-unit">years</div><div class="km-label">Payback</div></div>
+    <div class="km"><div class="km-val gc" id="km-sav">—</div><div class="km-unit">per year</div><div class="km-label">Annual Savings</div></div>
+    <div class="km"><div class="km-val" id="km-net">—</div><div class="km-unit">after ITC</div><div class="km-label">Net CAPEX</div></div>
+    <div class="km"><div class="km-val bc" id="km-lcos">—</div><div class="km-unit">$/MWh</div><div class="km-label">LCOS</div></div>`;
+  rb.appendChild(km);
+  setTimeout(()=>{
+    cntUp($('km-pay'),payback,'','yr',1);
+    cntUp($('km-sav'),savings,'$','',0);
+    cntUp($('km-net'),netCap,'$','',0);
+    cntUp($('km-lcos'),lcos,'$','',1);
+  },120);
 
-  if(d.viability_note){const vn=document.createElement('div');vn.className='res-section ani ani-3';vn.innerHTML=`<div class="viab-note">${d.viability_note}</div>`;rb.appendChild(vn);}
+  // VIAB NOTE
+  if(d.viability_note){
+    const vn=document.createElement('div');vn.className='rsec an an3';
+    vn.innerHTML=`<div class="viab-note">${d.viability_note}</div>`;
+    rb.appendChild(vn);
+  }
 
-  const pwr=sz.bess_power_kw,kwh=sz.bess_nameplate_kwh,usable=sz.bess_usable_kwh,batPct=Math.min(100,Math.round(usable/kwh*100));
-  const sc=document.createElement('div');sc.className='res-section ani ani-3';
-  sc.innerHTML=`<div class="rs-title">Optimal Sizing <span class="rs-cite">Neubauer & Simpson (2015) NREL/TP-5400-63162</span></div>
-  <div class="sizing-display">
-    <div class="bat-result">
-      <div class="bat-r-cap"></div>
-      <div class="bat-r-body"><div class="bat-r-fill" id="brf"></div><div class="bat-r-pct" id="brp">0%</div></div>
-      <div class="bat-r-label">${(ch.type||'lfp').toUpperCase()}</div>
+  // SIZING
+  const pwr=sz.bess_power_kw,kwh=sz.bess_nameplate_kwh,usable=sz.bess_usable_kwh;
+  const batPct=Math.min(100,Math.round(usable/kwh*100));
+  const sc=document.createElement('div');sc.className='rsec an an3';
+  sc.innerHTML=`
+    <div class="sec-h">
+      <div class="sec-title">Optimal Sizing</div>
+      <div class="sec-cite">Neubauer &amp; Simpson (2015) NREL/TP-5400-63162</div>
     </div>
-    <div class="sizing-specs">
-      <div class="spec-row"><span class="spec-k">BESS Power</span><span class="spec-v">${fmtN(pwr,0)}<small>kW</small></span></div>
-      <div class="spec-row"><span class="spec-k">Nameplate Energy</span><span class="spec-v">${fmtN(kwh,0)}<small>kWh</small></span></div>
-      <div class="spec-row"><span class="spec-k">Usable Energy</span><span class="spec-v">${fmtN(usable,0)}<small>kWh</small></span></div>
-      <div class="spec-row"><span class="spec-k">Discharge Duration</span><span class="spec-v">${sz.discharge_hours}<small>h</small></span></div>
-      <div class="spec-row"><span class="spec-k">RTE (AC-AC)</span><span class="spec-v">${ch.rte_ac_ac||0.85}<small>per ATB2024b</small></span></div>
-      <div class="spec-row"><span class="spec-k">Calendar Life</span><span class="spec-v">${ch.calendar_life_yrs||15}<small>years</small></span></div>
-    </div>
-  </div>`;
+    <div class="bess-layout">
+      <div class="bat-result-wrap">
+        <div class="bat-r-cap"></div>
+        <div class="bat-r-body"><div class="bat-r-fill" id="brf"></div><div class="bat-r-pct" id="brp">0%</div></div>
+        <div class="bat-r-label">${(ch.type||'lfp').toUpperCase()}</div>
+      </div>
+      <div class="specs-list">
+        <div class="spec-row"><span class="spec-k">BESS Power</span><span class="spec-v">${fN(pwr,0)}<small>kW</small></span></div>
+        <div class="spec-row"><span class="spec-k">Nameplate Energy</span><span class="spec-v">${fN(kwh,0)}<small>kWh</small></span></div>
+        <div class="spec-row"><span class="spec-k">Usable Energy</span><span class="spec-v">${fN(usable,0)}<small>kWh</small></span></div>
+        <div class="spec-row"><span class="spec-k">Discharge Duration</span><span class="spec-v">${sz.discharge_hours}<small>h</small></span></div>
+        <div class="spec-row"><span class="spec-k">RTE (AC-AC)</span><span class="spec-v">${ch.rte_ac_ac||0.85}<small>per ATB2024b</small></span></div>
+        <div class="spec-row"><span class="spec-k">Calendar Life</span><span class="spec-v">${ch.calendar_life_yrs||15}<small>years</small></span></div>
+      </div>
+    </div>`;
   rb.appendChild(sc);
   setTimeout(()=>fillBat($('brf'),$('brp'),batPct),300);
 
+  // SAVINGS
   const maxS=Math.max(demS,touS,solS,1);
-  const sv=document.createElement('div');sv.className='res-section ani ani-4';
-  sv.innerHTML=`<div class="rs-title">Annual Savings Breakdown <span class="rs-cite">OpenEI Utility Rate DB 2024</span></div>
-  <div class="sav-list">
-    <div class="sav-item"><div class="sav-head"><span class="sav-label">Demand Charge Reduction</span><span class="sav-val">${fmt$(demS)}</span></div><div class="sav-track"><div class="sav-fill d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div></div>
-    <div class="sav-item"><div class="sav-head"><span class="sav-label">TOU Arbitrage</span><span class="sav-val">${fmt$(touS)}</span></div><div class="sav-track"><div class="sav-fill t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div></div>
-    ${solS>0?`<div class="sav-item"><div class="sav-head"><span class="sav-label">Solar Self-Consumption Uplift</span><span class="sav-val">${fmt$(solS)}</span></div><div class="sav-track"><div class="sav-fill u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div></div>`:''}
-  </div>`;
+  const sv=document.createElement('div');sv.className='rsec an an4';
+  sv.innerHTML=`
+    <div class="sec-h">
+      <div class="sec-title">Annual Savings Breakdown</div>
+      <div class="sec-cite">OpenEI Utility Rate DB 2024</div>
+    </div>
+    <div class="savbars">
+      <div class="savrow">
+        <div class="savtop"><span class="savlabel">Demand Charge Reduction</span><span class="savval">${f$(demS)}</span></div>
+        <div class="savtrack"><div class="savfill d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div>
+      </div>
+      <div class="savrow">
+        <div class="savtop"><span class="savlabel">TOU Arbitrage</span><span class="savval">${f$(touS)}</span></div>
+        <div class="savtrack"><div class="savfill t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div>
+      </div>
+      ${solS>0?`<div class="savrow">
+        <div class="savtop"><span class="savlabel">Solar Self-Consumption Uplift</span><span class="savval">${f$(solS)}</span></div>
+        <div class="savtrack"><div class="savfill u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div>
+      </div>`:''}
+    </div>`;
   rb.appendChild(sv);
   setTimeout(()=>{['sf-d','sf-t','sf-s'].forEach(id=>{const el=$(id);if(el)el.style.width=el.dataset.w+'%';});},400);
 
+  // ATB SCENARIOS (Pro)
   if(mode==='optimal'&&d.atb_scenarios){
-    const s2=d.atb_scenarios,st=document.createElement('div');st.className='res-section ani ani-4';
-    st.innerHTML=`<div class="rs-title">NREL ATB 2024 — Three Cost Scenarios <span class="rs-cite">Cole & Karmakar 2023 · Ramasamy et al. 2023</span></div>
-    <div class="scen-wrap"><table class="scen-table">
-      <thead><tr><th>Scenario</th><th>CAPEX</th><th>ITC Credit</th><th>Net CAPEX</th><th>LCOS</th><th>NPV</th><th>IRR</th><th>Payback</th></tr></thead>
-      <tbody>
-        <tr><td class="td-b">Conservative</td><td>${fmt$(s2.high.capex.total_capex_usd)}</td><td>${fmt$(s2.high.itc.itc_credit_usd)}</td><td>${fmt$(s2.high.itc.net_capex_usd)}</td><td>$${s2.high.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.high.financials.npv_usd)}</td><td>${s2.high.financials.irr_pct}%</td><td>${s2.high.financials.simple_payback_yrs}yr</td></tr>
-        <tr class="mid-row"><td>Moderate <span class="rec-badge">REC</span></td><td>${fmt$(s2.mid.capex.total_capex_usd)}</td><td>${fmt$(s2.mid.itc.itc_credit_usd)}</td><td>${fmt$(s2.mid.itc.net_capex_usd)}</td><td>$${s2.mid.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.mid.financials.npv_usd)}</td><td>${s2.mid.financials.irr_pct}%</td><td>${s2.mid.financials.simple_payback_yrs}yr</td></tr>
-        <tr><td class="td-g">Advanced</td><td>${fmt$(s2.low.capex.total_capex_usd)}</td><td>${fmt$(s2.low.itc.itc_credit_usd)}</td><td>${fmt$(s2.low.itc.net_capex_usd)}</td><td>$${s2.low.lcos.lcos_usd_per_mwh}/MWh</td><td class="td-g">${fmt$(s2.low.financials.npv_usd)}</td><td>${s2.low.financials.irr_pct}%</td><td>${s2.low.financials.simple_payback_yrs}yr</td></tr>
-      </tbody>
-    </table></div>`;
+    const s2=d.atb_scenarios;
+    const st=document.createElement('div');st.className='rsec an an4';
+    st.innerHTML=`
+      <div class="sec-h">
+        <div class="sec-title">NREL ATB 2024 — Three Cost Scenarios</div>
+        <div class="sec-cite">Cole &amp; Karmakar 2023</div>
+      </div>
+      <div class="scen-scroll"><table class="stab">
+        <thead><tr><th>Scenario</th><th>CAPEX</th><th>ITC</th><th>Net CAPEX</th><th>LCOS</th><th>NPV</th><th>IRR</th><th>Payback</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="tb">Conservative</td>
+            <td>${f$(s2.high.capex.total_capex_usd)}</td>
+            <td>${f$(s2.high.itc.itc_credit_usd)}</td>
+            <td>${f$(s2.high.itc.net_capex_usd)}</td>
+            <td>$${s2.high.lcos.lcos_usd_per_mwh}/MWh</td>
+            <td class="tg">${f$(s2.high.financials.npv_usd)}</td>
+            <td>${s2.high.financials.irr_pct}%</td>
+            <td>${s2.high.financials.simple_payback_yrs}yr</td>
+          </tr>
+          <tr class="midrow">
+            <td>Moderate<span class="rec">REC</span></td>
+            <td>${f$(s2.mid.capex.total_capex_usd)}</td>
+            <td>${f$(s2.mid.itc.itc_credit_usd)}</td>
+            <td>${f$(s2.mid.itc.net_capex_usd)}</td>
+            <td>$${s2.mid.lcos.lcos_usd_per_mwh}/MWh</td>
+            <td class="tg">${f$(s2.mid.financials.npv_usd)}</td>
+            <td>${s2.mid.financials.irr_pct}%</td>
+            <td>${s2.mid.financials.simple_payback_yrs}yr</td>
+          </tr>
+          <tr>
+            <td class="tg">Advanced</td>
+            <td>${f$(s2.low.capex.total_capex_usd)}</td>
+            <td>${f$(s2.low.itc.itc_credit_usd)}</td>
+            <td>${f$(s2.low.itc.net_capex_usd)}</td>
+            <td>$${s2.low.lcos.lcos_usd_per_mwh}/MWh</td>
+            <td class="tg">${f$(s2.low.financials.npv_usd)}</td>
+            <td>${s2.low.financials.irr_pct}%</td>
+            <td>${s2.low.financials.simple_payback_yrs}yr</td>
+          </tr>
+        </tbody>
+      </table></div>`;
     rb.appendChild(st);
   }
 
+  // ITC
   const adders=mode==='optimal'?(d.atb_scenarios?.mid?.itc?.adders_applied||{}):{};
-  const itcEl=document.createElement('div');itcEl.className='res-section ani ani-5';
-  itcEl.innerHTML=`<div class="rs-title">IRA 2022 Investment Tax Credit <span class="rs-cite">§48E · §48C(e)(2)(A) · §48E(b)(3)(B)</span></div>
-  <div class="itc-display">
-    <div class="itc-big" id="itcBig">—<small>%</small></div>
-    <div class="itc-breakdown">
-      <div class="itc-line active"><div class="itc-dot"></div>Base 30% · IRA 2022 §48E<span class="itc-amt">${fmt$(totCap*.30)}</span></div>
-      <div class="itc-line ${adders.domestic_content?'active':''}"><div class="itc-dot"></div>Domestic Content +10% · §48C(e)(2)(A)<span class="itc-amt">${adders.domestic_content?fmt$(totCap*.10):'—'}</span></div>
-      <div class="itc-line ${adders.energy_community?'active':''}"><div class="itc-dot"></div>Energy Community +10% · §48E(b)(3)(B)<span class="itc-amt">${adders.energy_community?fmt$(totCap*.10):'—'}</span></div>
-      <div class="itc-line active" style="border-top:1px solid var(--rule2);margin-top:4px;padding-top:8px"><div class="itc-dot"></div><strong>Total ITC Credit</strong><span class="itc-amt" style="color:var(--red)">${fmt$(itcCredit)}</span></div>
+  const itcEl=document.createElement('div');itcEl.className='rsec an an5';
+  itcEl.innerHTML=`
+    <div class="sec-h">
+      <div class="sec-title">IRA 2022 ITC</div>
+      <div class="sec-cite">§48E · §48C(e)(2)(A) · §48E(b)(3)(B)</div>
     </div>
-  </div>`;
+    <div class="itc-row">
+      <div class="itc-num" id="itcBig">—<small>%</small></div>
+      <div class="itc-lines">
+        <div class="itcl on"><div class="itcl-dot"></div>Base 30% · IRA 2022 §48E<span class="itcl-amt">${f$(totCap*.30)}</span></div>
+        <div class="itcl ${adders.domestic_content?'on':''}"><div class="itcl-dot"></div>Domestic Content +10%<span class="itcl-amt">${adders.domestic_content?f$(totCap*.10):'—'}</span></div>
+        <div class="itcl ${adders.energy_community?'on':''}"><div class="itcl-dot"></div>Energy Community +10%<span class="itcl-amt">${adders.energy_community?f$(totCap*.10):'—'}</span></div>
+        <div class="itcl on total"><div class="itcl-dot"></div><strong>Total Credit</strong><span class="itcl-amt">${f$(itcCredit)}</span></div>
+      </div>
+    </div>`;
   rb.appendChild(itcEl);
-  setTimeout(()=>{countUp($('itcBig'),itcPct,'','',0,800);},200);
-  setTimeout(()=>{const el=$('itcBig');if(el)el.innerHTML=fmtN(itcPct,0)+'<small>%</small>';},1200);
+  setTimeout(()=>{cntUp($('itcBig'),itcPct,'','',0,800);},150);
+  setTimeout(()=>{const el=$('itcBig');if(el)el.innerHTML=fN(itcPct,0)+'<small>%</small>';},1050);
 
+  // SOURCES
   if(d.master_source_list){
-    const srcEl=document.createElement('div');srcEl.className='res-section ani ani-6';
-    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="src-row"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
-    srcEl.innerHTML=`<button class="src-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide citations':'▼ View all citations (${Object.keys(d.master_source_list).length})'">▼ View all citations (${Object.keys(d.master_source_list).length})</button><div class="src-body">${rows}</div>`;
+    const srcEl=document.createElement('div');srcEl.className='rsec an an6';
+    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="src-item"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
+    srcEl.innerHTML=`
+      <button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('open');this.textContent=w.classList.contains('open')?'▲ Hide citations':'▼ View all citations (${Object.keys(d.master_source_list).length})'">
+        ▼ View all citations (${Object.keys(d.master_source_list).length})
+      </button>
+      <div class="src-wrap">${rows}</div>`;
     rb.appendChild(srcEl);
   }
 
-  if(window.innerWidth<880)$('resultsCol').scrollIntoView({behavior:'smooth'});
+  if(window.innerWidth<900)$('resCard').scrollIntoView({behavior:'smooth'});
 }
+
 document.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
 </script>
 </body>
