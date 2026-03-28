@@ -534,7 +534,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--border);padding:20
   <div class="nav-mid">Battery Storage Sizing Intelligence</div>
   <div class="nav-right">
     <a class="nav-a" href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
-    <a class="nav-a" href="mailto:support@solartruth.app">Contact</a>
+    <a class="nav-a" href="/cdn-cgi/l/email-protection#5a292f2a2a35282e1a2935363b282e282f2e32743b2a2a">Contact</a>
     <button class="btn-primary" onclick="openPlans()">Plans &amp; Access</button>
   </div>
 </nav>
@@ -706,7 +706,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--border);padding:20
   <div class="fr">
     <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">API Access</a>
     <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
-    <a href="mailto:support@solartruth.app">Contact</a>
+    <a href="/cdn-cgi/l/email-protection#7d0e080d0d120f093d0e12111c0f090f080915531c0d0d">Contact</a>
   </div>
 </footer>
 <div class="disc">Results based on NREL ATB 2024, PNNL-33283, OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility subject to IRS qualification; consult a qualified tax professional.</div>
@@ -760,11 +760,11 @@ footer{position:relative;z-index:5;border-top:1px solid var(--border);padding:20
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Apply for Ultra</a>
       </div>
     </div>
-    <div class="mfoot">Bundle: all 8 APIs from $249/month · <a href="mailto:support@solartruth.app">support@solartruth.app</a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a></div>
+    <div class="mfoot">Bundle: all 8 APIs from $249/month · <a href="/cdn-cgi/l/email-protection#3f4c4a4f4f504d4b7f4c50535e4d4b4d4a4b57115e4f4f"><span class="__cf_email__" data-cfemail="d8abada8a8b7aaac98abb7b4b9aaacaaadacb0f6b9a8a8">[email&#160;protected]</span></a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a></div>
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const $=id=>document.getElementById(id);
 const f$=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
 const fN=(n,d=1)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
@@ -834,13 +834,23 @@ async function go(){
     let r,data;
 
     if(!key && !demoUsed){
-      // FIRST RUN — direct to HF, no key needed
-      r=await fetch(HF_BASE+'/bess/quick',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})
-      });
-      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'Server error '+r.status+'. The API may be waking up — please try again in 30 seconds.');}
+      // FIRST RUN — direct to HF, no key, no friction
+      // HF Spaces sleep after inactivity: first call can take 30-60s to wake
+      // Show a better loading message while waiting
+      btn.querySelector('.s').innerHTML='<span class="ring"></span> Waking server… up to 60s';
+      let r2;
+      try{
+        r2=await Promise.race([
+          fetch(HF_BASE+'/bess/quick',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})
+          }),
+          new Promise((_,rej)=>setTimeout(()=>rej(new Error('Server is still waking up. Please try again in 20 seconds.')),70000))
+        ]);
+      }catch(wakErr){throw wakErr;}
+      r=r2;
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'Server error '+r.status+'. Try again in 30 seconds.');}
       data=await r.json();data._mode='quick';data._demo=true;
       demoUsed=true;
       // Reveal key box and gate after render
@@ -1003,14 +1013,4 @@ function render(d){
   if(d.master_source_list){
     const se=document.createElement('div');se.className='rsec an a6';
     const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="sri"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
-    se.innerHTML=`<button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('on');this.textContent=w.classList.contains('on')?'▲ Hide citations':'▼ Citations (${Object.keys(d.master_source_list).length})">▼ Citations (${Object.keys(d.master_source_list).length})</button><div class="src-wrap">${rows}</div>`;
-    rb.appendChild(se);
-  }
-
-  if(window.innerWidth<860)$('resPanel').scrollIntoView({behavior:'smooth'});
-}
-
-document.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
-</script>
-</body>
-</html>
+    se.innerHTML=`<button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('on');this.textContent=w.classList.contains('on')?'▲ Hide citations':'▼ Citations (${Object.keys(d.m
