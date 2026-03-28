@@ -3,803 +3,576 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BESSiq — Battery Storage Intelligence</title>
+<title>BESSiq · Battery Storage Sizing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080c14;
-  --bg2:#0c1220;
-  --glass:rgba(255,255,255,0.04);
-  --glass2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.08);
-  --border2:rgba(255,255,255,0.14);
-  --teal:#00e5c8;
-  --teal2:#00bba6;
-  --teal3:rgba(0,229,200,0.12);
-  --purple:#7c5df7;
-  --purple2:rgba(124,93,247,0.15);
-  --amber:#f5a623;
-  --red:#ff4d6d;
-  --green:#22d3a0;
-  --blue:#4da6ff;
-  --text:#e8ecf4;
-  --muted:#6b7a99;
-  --muted2:#4a5568;
+  --bg:#05080f;
+  --surface:#0b0f1a;
+  --surface2:#111827;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --teal:#00d4b8;
+  --teal-dim:rgba(0,212,184,0.1);
+  --teal-glow:rgba(0,212,184,0.25);
+  --text:#f0f2f7;
+  --text2:#8892a4;
+  --text3:#4a5568;
+  --green:#10b981;
+  --blue:#60a5fa;
+  --amber:#f59e0b;
+  --red:#f87171;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;scroll-behavior:smooth}
+html{font-size:15px}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:'Outfit',sans-serif;
+  font-family:'Inter',system-ui,sans-serif;
+  font-weight:400;
+  line-height:1.6;
   min-height:100vh;
   overflow-x:hidden;
 }
 
-/* AMBIENT */
+/* subtle background texture */
 body::before{
-  content:'';
-  position:fixed;inset:0;
+  content:'';position:fixed;inset:0;
   background:
-    radial-gradient(ellipse 80% 60% at 20% -10%,rgba(124,93,247,0.18) 0%,transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 110%,rgba(0,229,200,0.12) 0%,transparent 60%);
-  pointer-events:none;z-index:0;
-}
-/* GRID */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
-  background-size:60px 60px;
+    radial-gradient(ellipse 900px 600px at 0% 0%,rgba(0,212,184,0.04) 0%,transparent 70%),
+    radial-gradient(ellipse 700px 500px at 100% 100%,rgba(96,165,250,0.04) 0%,transparent 70%);
   pointer-events:none;z-index:0;
 }
 
 /* NAV */
 nav{
-  position:relative;z-index:20;
+  position:sticky;top:0;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 40px;
-  height:64px;
+  padding:0 32px;height:56px;
+  background:rgba(5,8,15,0.92);
   border-bottom:1px solid var(--border);
-  background:rgba(8,12,20,0.8);
   backdrop-filter:blur(20px);
 }
-.nav-logo{
+.logo{
   display:flex;align-items:center;gap:10px;
-  font-weight:800;font-size:22px;letter-spacing:-0.5px;
+  font-family:'Syne',sans-serif;
+  font-size:18px;font-weight:800;
+  letter-spacing:-0.5px;color:var(--text);
+  text-decoration:none;
 }
-.nav-logo .b{color:var(--teal)}
-.nav-logo .rest{color:var(--text)}
-.nav-logo .iq{
-  font-size:10px;font-weight:600;letter-spacing:3px;
-  background:linear-gradient(135deg,var(--teal),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  margin-left:2px;
-  border:1px solid rgba(0,229,200,0.3);
-  padding:2px 6px;border-radius:4px;
-  -webkit-text-fill-color:initial;
-  color:var(--teal);
+.logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--teal);
+  box-shadow:0 0 12px var(--teal-glow);
+  animation:throb 3s ease-in-out infinite;
 }
-.nav-center{
-  display:flex;align-items:center;gap:6px;
+@keyframes throb{0%,100%{box-shadow:0 0 12px var(--teal-glow)}50%{box-shadow:0 0 24px var(--teal-glow),0 0 40px rgba(0,212,184,0.1)}}
+.nav-mid{
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--muted);
+  font-size:10px;letter-spacing:3px;color:var(--text3);
   text-transform:uppercase;
 }
-.dot-live{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 10px var(--green);
-  animation:pulse-live 2s ease-in-out infinite;
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-a{
+  font-size:13px;font-weight:500;color:var(--text2);
+  text-decoration:none;transition:color .15s;
 }
-@keyframes pulse-live{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
-.nav-right{display:flex;align-items:center;gap:12px}
-.nav-link{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--muted);
-  text-decoration:none;text-transform:uppercase;
-  transition:color .2s;
-}
-.nav-link:hover{color:var(--teal)}
-.btn-plans{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+.nav-a:hover{color:var(--text)}
+.btn-primary{
+  font-size:12px;font-weight:600;
   color:var(--bg);background:var(--teal);
-  border:none;padding:9px 18px;cursor:pointer;
-  border-radius:6px;transition:all .2s;
-  font-weight:600;
+  border:none;padding:8px 18px;border-radius:6px;
+  cursor:pointer;transition:all .15s;
+  letter-spacing:0.2px;
 }
-.btn-plans:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,229,200,0.3)}
+.btn-primary:hover{background:#00bda5;box-shadow:0 0 20px var(--teal-glow)}
 
 /* HERO */
 .hero{
   position:relative;z-index:5;
-  padding:72px 40px 56px;
-  max-width:1280px;margin:0 auto;
-  display:grid;grid-template-columns:1fr 400px;gap:64px;align-items:center;
+  padding:80px 32px 56px;
+  max-width:1100px;margin:0 auto;
 }
-.hero-tag{
+.hero-eyebrow{
   display:inline-flex;align-items:center;gap:8px;
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:4px;color:var(--teal);
-  text-transform:uppercase;margin-bottom:24px;
-  background:var(--teal3);border:1px solid rgba(0,229,200,0.2);
-  padding:6px 14px;border-radius:20px;
+  font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:20px;
 }
-.hero-tag::before{content:'◆';font-size:6px}
-.hero-h1{
-  font-size:clamp(44px,6vw,80px);
-  font-weight:900;line-height:1.0;letter-spacing:-2px;
-  color:var(--text);margin-bottom:16px;
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--teal)}
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(36px,5vw,60px);
+  font-weight:800;line-height:1.08;letter-spacing:-1.5px;
+  color:var(--text);margin-bottom:18px;
+  max-width:700px;
 }
-.hero-h1 .grad{
-  background:linear-gradient(135deg,var(--teal) 0%,var(--purple) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-}
+h1 .accent{color:var(--teal)}
 .hero-sub{
-  font-size:18px;font-weight:300;color:var(--muted);
-  line-height:1.65;max-width:520px;margin-bottom:36px;
+  font-size:16px;font-weight:300;color:var(--text2);
+  max-width:560px;line-height:1.7;margin-bottom:32px;
 }
-.hero-pills{display:flex;gap:10px;flex-wrap:wrap}
-.pill{
+.hero-meta{
+  display:flex;gap:24px;flex-wrap:wrap;
+  padding:20px 0;border-top:1px solid var(--border);
+}
+.meta-item{
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;
-  color:var(--muted);border:1px solid var(--border2);
-  padding:6px 12px;border-radius:4px;text-transform:uppercase;
-  background:var(--glass);
+  font-size:10px;letter-spacing:2px;color:var(--text3);
+  text-transform:uppercase;display:flex;align-items:center;gap:6px;
 }
+.meta-item::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);opacity:.6}
 
-/* HERO RIGHT — stat stack */
-.hero-stats{
-  background:var(--glass);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:28px;
-  backdrop-filter:blur(12px);
-  display:flex;flex-direction:column;gap:0;
-}
-.hstat{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 0;
-  border-bottom:1px solid var(--border);
-}
-.hstat:last-child{border-bottom:none}
-.hstat-l{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
-}
-.hstat-v{
-  font-size:24px;font-weight:800;
-  background:linear-gradient(135deg,var(--teal),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.hstat-u{font-size:11px;font-weight:400;color:var(--muted);margin-left:3px;-webkit-text-fill-color:var(--muted)}
-
-/* TICKER */
-.ticker{
+/* LAYOUT */
+.layout{
   position:relative;z-index:5;
-  background:var(--glass);
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  overflow:hidden;padding:10px 0;
-  display:flex;align-items:center;gap:0;
-}
-.ticker-label{
-  flex-shrink:0;
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--teal);
-  text-transform:uppercase;
-  padding:0 24px;border-right:1px solid var(--border);
-  white-space:nowrap;
-}
-.ticker-scroll{flex:1;overflow:hidden;padding:0 24px}
-.ticker-inner{
-  display:flex;white-space:nowrap;
-  animation:ticker 30s linear infinite;
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--muted);
-  text-transform:uppercase;
-}
-.ticker-inner span{padding:0 40px}
-.ticker-inner span::before{content:'◆ ';color:var(--teal);font-size:6px}
-@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-/* WORKSPACE */
-.workspace{
-  position:relative;z-index:5;
-  max-width:1280px;margin:0 auto;
-  padding:0 40px 80px;
-  display:grid;grid-template-columns:400px 1fr;gap:24px;
-  align-items:start;
+  max-width:1100px;margin:0 auto;
+  padding:0 32px 80px;
+  display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;
 }
 
-/* GLASS CARD */
-.card{
-  background:var(--glass);
+/* PANEL */
+.panel{
+  background:var(--surface);
   border:1px solid var(--border);
-  border-radius:16px;
-  backdrop-filter:blur(12px);
-  overflow:hidden;
+  border-radius:12px;overflow:hidden;
 }
-.card-head{
-  padding:18px 24px;
-  border-bottom:1px solid var(--border);
+.panel-hd{
+  padding:16px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
 }
-.card-title{
+.panel-hd-label{
   font-family:'JetBrains Mono',monospace;
   font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
-  display:flex;align-items:center;gap:8px;
 }
-.card-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
-.card-num{
+.panel-hd-n{
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--muted2);letter-spacing:1px;
+  font-size:9px;color:var(--text3);
 }
-.card-body{padding:24px}
+.panel-body{padding:20px}
 
-/* FORM */
-.fstack{display:flex;flex-direction:column;gap:16px}
-.field{display:flex;flex-direction:column;gap:8px}
+/* FORM ELEMENTS */
+.fstack{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
 .field label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;
+  font-size:11px;font-weight:600;
+  color:var(--text2);letter-spacing:0.3px;
 }
 .req{color:var(--teal)}
 .field input,.field select{
-  background:rgba(255,255,255,0.05);
+  background:var(--surface2);
   border:1px solid var(--border2);
-  border-radius:8px;
-  color:var(--text);
+  border-radius:7px;color:var(--text);
   font-family:'JetBrains Mono',monospace;
-  font-size:13px;
-  padding:12px 14px;
-  outline:none;
-  transition:border-color .2s,box-shadow .2s;
-  appearance:none;-webkit-appearance:none;
+  font-size:13px;padding:10px 12px;
+  outline:none;transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none;
   -webkit-text-fill-color:var(--text);
 }
+.field input::placeholder{color:var(--text3)}
 .field input:focus,.field select:focus{
   border-color:var(--teal);
-  box-shadow:0 0 0 3px rgba(0,229,200,0.1);
+  box-shadow:0 0 0 3px rgba(0,212,184,0.08);
 }
-.field select option{background:#1a1f30;color:var(--text)}
-.f-hint{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--muted2);letter-spacing:1px;
-}
+.field select option{background:var(--surface2);color:var(--text)}
+.fhint{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* DEMO BADGE */
+.demo-strip{
+  background:rgba(0,212,184,0.05);
+  border:1px solid rgba(0,212,184,0.15);
+  border-radius:8px;padding:12px 14px;
+}
+.demo-strip-title{
+  font-size:11px;font-weight:600;color:var(--teal);
+  margin-bottom:4px;display:flex;align-items:center;gap:6px;
+}
+.demo-strip-title::before{content:'◆';font-size:7px}
+.demo-strip-body{font-size:11px;color:var(--text2);line-height:1.6}
 
 /* KEY BOX */
 .key-box{
-  background:rgba(0,229,200,0.04);
-  border:1px solid rgba(0,229,200,0.2);
-  border-radius:10px;padding:16px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;padding:14px;
 }
-.key-head{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
-  margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;
+.key-label{
+  font-size:11px;font-weight:600;color:var(--text2);
+  margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;
 }
-.key-head a{color:var(--teal);text-decoration:none;font-size:9px;opacity:.7;transition:opacity .2s}
-.key-head a:hover{opacity:1}
-.key-note{
-  font-family:'JetBrains Mono',monospace;
-  font-size:8px;color:var(--muted);letter-spacing:1px;line-height:1.8;margin-top:8px;
+.key-label a{
+  font-size:10px;font-weight:500;color:var(--teal);
+  text-decoration:none;opacity:.8;transition:opacity .15s;
 }
+.key-label a:hover{opacity:1}
+.key-hint{font-size:10px;color:var(--text3);margin-top:7px;line-height:1.6}
 
 /* TOGGLES */
-.togrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tog{
-  display:flex;align-items:center;gap:10px;
-  padding:11px 13px;
-  border:1px solid var(--border);border-radius:8px;
-  background:var(--glass);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:9px;
+  padding:9px 11px;border-radius:7px;
+  border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;
+  transition:all .15s;
 }
 .tog:hover{border-color:var(--border2)}
-.tog.on{border-color:rgba(0,229,200,0.4);background:rgba(0,229,200,0.06)}
+.tog.on{border-color:rgba(0,212,184,0.35);background:rgba(0,212,184,0.05)}
 .tog-box{
-  width:16px;height:16px;border-radius:4px;
-  border:1px solid var(--muted2);flex-shrink:0;
+  width:15px;height:15px;border-radius:4px;
+  border:1px solid var(--text3);flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
+  transition:all .15s;
 }
 .tog.on .tog-box{border-color:var(--teal);background:var(--teal)}
 .tog-box svg{display:none}
 .tog.on .tog-box svg{display:block}
-.tog-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--muted);letter-spacing:1px;line-height:1.4;
-}
-.tog.on .tog-label{color:var(--teal)}
+.tog span{font-size:10px;color:var(--text2);line-height:1.4}
+.tog.on span{color:var(--teal)}
 
-/* RUN BTN */
-.run-wrap{padding-top:4px}
+/* BUTTONS */
 .run-btn{
-  width:100%;padding:16px;
-  background:linear-gradient(135deg,var(--teal),var(--teal2));
-  color:#080c14;border:none;cursor:pointer;
-  border-radius:10px;font-family:'Outfit',sans-serif;
-  font-size:16px;font-weight:800;letter-spacing:1px;
-  transition:all .2s;position:relative;overflow:hidden;
+  width:100%;padding:13px;border-radius:8px;
+  background:var(--teal);color:var(--bg);
+  border:none;cursor:pointer;font-size:14px;font-weight:700;
+  letter-spacing:.2px;transition:all .15s;
+  position:relative;overflow:hidden;
 }
-.run-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
-}
-.run-btn:hover:not(:disabled){
-  transform:translateY(-2px);
-  box-shadow:0 8px 32px rgba(0,229,200,0.35);
-}
-.run-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-.run-btn .bt{display:block}
-.run-btn .bs{display:none;align-items:center;justify-content:center;gap:10px}
-.run-btn.loading .bt{display:none}
-.run-btn.loading .bs{display:flex}
-.ring{width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.3);border-top-color:#080c14;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.err-bar{
-  margin-top:10px;padding:12px 16px;
-  background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);
-  border-radius:8px;font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--red);letter-spacing:1px;line-height:1.6;display:none;
+.run-btn:hover:not(:disabled){box-shadow:0 4px 24px var(--teal-glow);transform:translateY(-1px)}
+.run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.run-btn .t{display:block}
+.run-btn .s{display:none;align-items:center;justify-content:center;gap:8px}
+.run-btn.spin .t{display:none}
+.run-btn.spin .s{display:flex}
+.ring{width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,0,0,.25);border-top-color:var(--bg);animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+.err{
+  margin-top:10px;padding:11px 14px;background:rgba(248,113,113,0.08);
+  border:1px solid rgba(248,113,113,0.2);border-radius:7px;
+  font-size:11px;color:var(--red);line-height:1.6;display:none;
 }
 
-/* RESULTS */
-.results-card{
-  background:var(--glass);
+/* GATE STRIP — shown after first free use */
+.gate-strip{
+  margin-top:10px;padding:14px;
+  background:rgba(0,212,184,0.06);
+  border:1px solid rgba(0,212,184,0.2);
+  border-radius:8px;display:none;
+}
+.gate-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.gate-body{font-size:11px;color:var(--text2);line-height:1.65;margin-bottom:12px}
+.gate-btns{display:flex;gap:8px}
+.gate-btn-free{
+  flex:1;padding:9px;border-radius:6px;
+  border:1px solid var(--border2);background:transparent;
+  font-size:11px;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:all .15s;text-decoration:none;
+  text-align:center;display:block;
+}
+.gate-btn-free:hover{border-color:var(--teal);color:var(--teal)}
+.gate-btn-pro{
+  flex:1;padding:9px;border-radius:6px;
+  background:var(--teal);border:none;
+  font-size:11px;font-weight:700;color:var(--bg);
+  cursor:pointer;transition:all .15s;text-decoration:none;
+  text-align:center;display:block;
+}
+.gate-btn-pro:hover{box-shadow:0 0 16px var(--teal-glow)}
+
+/* RESULTS PANEL */
+.res-panel{
+  background:var(--surface);
   border:1px solid var(--border);
-  border-radius:16px;
-  backdrop-filter:blur(12px);
-  min-height:600px;
+  border-radius:12px;
+  min-height:580px;
   display:flex;flex-direction:column;
+  overflow:hidden;
 }
 
-/* EMPTY */
+/* EMPTY STATE */
 .empty{
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  gap:24px;padding:60px;text-align:center;
+  gap:20px;padding:48px;text-align:center;
 }
-.bat-wrap{position:relative;width:56px}
-.bat-cap-e{
-  width:22px;height:8px;background:rgba(255,255,255,0.08);
-  border-radius:3px 3px 0 0;margin:0 auto;
+.bat-idle-wrap{position:relative}
+.bat-c{width:20px;height:6px;background:var(--border2);border-radius:3px 3px 0 0;margin:0 auto}
+.bat-b{
+  width:52px;height:90px;
+  border:1px solid var(--border2);border-radius:5px;
+  position:relative;overflow:hidden;
+  background:rgba(255,255,255,0.02);
 }
-.bat-body-e{
-  width:56px;height:96px;
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:6px;position:relative;overflow:hidden;
-  background:rgba(255,255,255,0.03);
-}
-.bat-fill-e{
+.bat-f{
   position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(to top,rgba(0,229,200,0.6),rgba(0,229,200,0.2));
-  transition:height .8s ease;
+  background:linear-gradient(to top,rgba(0,212,184,0.5),rgba(0,212,184,0.15));
+  transition:height .9s ease;
 }
-.bat-glow{
-  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  width:40px;height:40px;
-  background:radial-gradient(circle,rgba(0,229,200,0.3),transparent 70%);
-  pointer-events:none;
-}
-.bat-pct-e{
+.bat-p{
   position:absolute;inset:0;display:flex;
   align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:11px;
-  color:rgba(255,255,255,0.6);
-}
-.empty-title{
-  font-size:20px;font-weight:600;color:var(--muted);letter-spacing:-0.3px;
-}
-.empty-sub{
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:2px;color:var(--muted2);
-  text-transform:uppercase;max-width:220px;line-height:2;
+  font-size:10px;color:var(--text2);
 }
+.empty-h{font-size:16px;font-weight:600;color:var(--text2)}
+.empty-p{font-size:12px;color:var(--text3);max-width:200px;line-height:1.7}
 
-/* RESULTS BODY */
+/* RESULTS CONTENT */
 .rbody{display:none;flex-direction:column;flex:1}
 .rbody.on{display:flex}
 
-/* TOP BAR */
-.rbar{
-  padding:16px 24px;
-  border-bottom:1px solid var(--border);
+/* RESULT TOP BAR */
+.rtop{
+  padding:14px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(0,229,200,0.03);
+  background:rgba(0,212,184,0.03);
 }
-.rbar-label{
+.rtop-label{
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;
+  font-size:9px;letter-spacing:3px;color:var(--text3);text-transform:uppercase;
 }
-.viab-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;text-transform:uppercase;
-  padding:5px 14px;border-radius:20px;border:1px solid;
+.vtag{
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;padding:4px 12px;border-radius:20px;border:1px solid;
 }
-.viab-tag.strong{border-color:rgba(34,211,160,0.4);color:var(--green);background:rgba(34,211,160,0.08)}
-.viab-tag.moderate{border-color:rgba(77,166,255,0.4);color:var(--blue);background:rgba(77,166,255,0.08)}
-.viab-tag.marginal{border-color:var(--border);color:var(--muted)}
+.vtag.strong{color:var(--green);border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.07)}
+.vtag.moderate{color:var(--blue);border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.07)}
+.vtag.marginal{color:var(--text3);border-color:var(--border)}
 
-/* KEY METRICS */
-.kmetrics{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  border-bottom:1px solid var(--border);
-}
-.km{
-  padding:22px 18px;
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;gap:4px;
-}
-.km:last-child{border-right:none}
-.km-val{
-  font-size:28px;font-weight:800;letter-spacing:-1px;
+/* 4 STATS */
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.s4{padding:18px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.s4:last-child{border-right:none}
+.s4-n{
+  font-family:'Syne',sans-serif;
+  font-size:26px;font-weight:700;letter-spacing:-0.5px;
   color:var(--text);line-height:1;
 }
-.km-val.tc{color:var(--teal)}
-.km-val.gc{color:var(--green)}
-.km-val.bc{color:var(--blue)}
-.km-unit{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:1px}
-.km-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.s4-n.tc{color:var(--teal)}
+.s4-n.gc{color:var(--green)}
+.s4-n.bc{color:var(--blue)}
+.s4-u{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:2px}
+.s4-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
 
-/* SECTIONS */
-.rsec{padding:22px 24px;border-bottom:1px solid var(--border)}
+/* SECTION */
+.rsec{padding:20px;border-bottom:1px solid var(--border)}
 .rsec:last-child{border-bottom:none}
-.sec-h{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sh-title{
+  font-size:11px;font-weight:600;color:var(--text2);
+  letter-spacing:.3px;display:flex;align-items:center;gap:7px;
 }
-.sec-title{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;
-  display:flex;align-items:center;gap:8px;
-}
-.sec-title::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal)}
-.sec-cite{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted2);letter-spacing:1px}
+.sh-title::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--teal)}
+.sh-cite{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.5px}
 
-/* BATTERY + SPECS */
-.bess-layout{display:flex;gap:20px;align-items:flex-start}
-.bat-result-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
-.bat-r-cap{width:22px;height:7px;background:rgba(255,255,255,0.08);border-radius:3px 3px 0 0;margin:0 auto}
-.bat-r-body{
-  width:58px;height:106px;
-  border:1px solid rgba(0,229,200,0.3);
-  border-radius:6px;position:relative;overflow:hidden;
-  background:rgba(0,229,200,0.03);
+/* SIZING */
+.siz-layout{display:flex;gap:18px;align-items:flex-start}
+.bat-res-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.br-c{width:18px;height:5px;background:var(--border2);border-radius:2px 2px 0 0;margin:0 auto}
+.br-b{
+  width:50px;height:90px;border:1px solid rgba(0,212,184,.25);
+  border-radius:5px;position:relative;overflow:hidden;
+  background:rgba(0,212,184,.03);
 }
-.bat-r-fill{
-  position:absolute;bottom:0;left:0;right:0;height:0%;
-  background:linear-gradient(to top,var(--teal),rgba(0,229,200,0.4));
-  transition:height 1.8s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 20px rgba(0,229,200,0.3);
-}
-.bat-r-pct{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:11px;
-  color:var(--text);z-index:2;font-weight:500;
-}
-.bat-r-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:8px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;
-}
-.specs-list{flex:1;display:flex;flex-direction:column;gap:0}
-.spec-row{
-  display:flex;justify-content:space-between;align-items:baseline;
-  padding:10px 0;border-bottom:1px solid var(--border);
-}
-.spec-row:last-child{border-bottom:none}
-.spec-k{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-.spec-v{font-size:17px;font-weight:700;color:var(--text)}
-.spec-v small{font-size:10px;font-weight:400;color:var(--muted);margin-left:3px}
+.br-f{position:absolute;bottom:0;left:0;right:0;height:0%;background:linear-gradient(to top,var(--teal),rgba(0,212,184,.3));transition:height 1.8s cubic-bezier(.4,0,.2,1)}
+.br-p{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);z-index:2}
+.br-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal);letter-spacing:2px;text-transform:uppercase}
+
+.siz-specs{flex:1;display:flex;flex-direction:column}
+.srow{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.sk{font-size:11px;color:var(--text3);font-weight:400}
+.sv{font-size:15px;font-weight:600;color:var(--text)}
+.sv small{font-size:10px;font-weight:400;color:var(--text3);margin-left:2px}
 
 /* SAVINGS BARS */
-.savbars{display:flex;flex-direction:column;gap:14px}
-.savrow{display:flex;flex-direction:column;gap:6px}
+.sav-stack{display:flex;flex-direction:column;gap:12px}
+.savrow{display:flex;flex-direction:column;gap:5px}
 .savtop{display:flex;justify-content:space-between;align-items:baseline}
-.savlabel{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-.savval{font-size:17px;font-weight:700;color:var(--text)}
-.savtrack{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-.savfill{height:100%;border-radius:2px;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
-.savfill.d{background:linear-gradient(90deg,var(--teal),var(--teal2))}
-.savfill.t{background:linear-gradient(90deg,var(--blue),var(--purple))}
-.savfill.u{background:linear-gradient(90deg,var(--amber),var(--red))}
+.savlabel{font-size:11px;color:var(--text2);font-weight:500}
+.savval{font-size:15px;font-weight:600;color:var(--text)}
+.savtrack{height:3px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden}
+.savfill{height:100%;border-radius:99px;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.sf-d{background:var(--teal)}
+.sf-t{background:var(--blue)}
+.sf-u{background:var(--amber)}
 
 /* SCENARIO TABLE */
-.scen-scroll{overflow-x:auto}
-.stab{width:100%;border-collapse:collapse;min-width:520px}
-.stab th{
+.scwrap{overflow-x:auto}
+.sctab{width:100%;border-collapse:collapse;min-width:480px}
+.sctab th{
   font-family:'JetBrains Mono',monospace;
-  font-size:8px;letter-spacing:3px;text-transform:uppercase;
-  color:var(--muted);padding:10px 14px;text-align:right;
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);padding:8px 12px;text-align:right;
   border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,0.2);
+  background:rgba(0,0,0,.2);
 }
-.stab th:first-child{text-align:left}
-.stab td{
+.sctab th:first-child{text-align:left}
+.sctab td{
   font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--text);
-  padding:13px 14px;text-align:right;
+  font-size:11px;color:var(--text2);
+  padding:11px 12px;text-align:right;
   border-bottom:1px solid var(--border);
 }
-.stab td:first-child{text-align:left;font-weight:600}
-.stab tr.midrow td{background:rgba(0,229,200,0.04)}
-.stab tr.midrow td:first-child{border-left:2px solid var(--teal)}
-.rec{
-  display:inline-block;font-size:7px;letter-spacing:2px;
-  background:var(--teal);color:#080c14;
-  padding:2px 6px;border-radius:3px;margin-left:6px;font-weight:700;
-}
-.tg{color:var(--green)}
-.tb{color:var(--blue)}
+.sctab td:first-child{text-align:left;color:var(--text);font-weight:500}
+.sctab tr.mr{background:rgba(0,212,184,.03)}
+.sctab tr.mr td:first-child{border-left:2px solid var(--teal);padding-left:10px}
+.rb{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;background:var(--teal);color:var(--bg);padding:2px 5px;border-radius:3px;margin-left:5px;font-weight:700}
+.tg{color:var(--green)!important}
+.tb{color:var(--blue)!important}
 
 /* ITC */
-.itc-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
-.itc-num{
-  font-size:72px;font-weight:900;line-height:1;letter-spacing:-3px;
-  background:linear-gradient(135deg,var(--teal),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  flex-shrink:0;
+.itc-layout{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.itc-big{
+  font-family:'Syne',sans-serif;
+  font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;
+  color:var(--teal);flex-shrink:0;
 }
-.itc-num small{font-size:28px;letter-spacing:0}
-.itc-lines{flex:1;display:flex;flex-direction:column;gap:0;padding-top:6px;min-width:180px}
-.itcl{
-  display:flex;align-items:center;gap:10px;
+.itc-big small{font-size:24px;letter-spacing:0;font-weight:600}
+.itc-list{flex:1;min-width:160px;display:flex;flex-direction:column;gap:0}
+.itcr{
+  display:flex;align-items:center;gap:8px;
   font-family:'JetBrains Mono',monospace;font-size:9px;
-  color:var(--muted);padding:9px 0;border-bottom:1px solid var(--border);
-  letter-spacing:1px;
+  color:var(--text3);padding:8px 0;border-bottom:1px solid var(--border);
+  letter-spacing:.5px;
 }
-.itcl:last-child{border-bottom:none}
-.itcl.on{color:var(--text)}
-.itcl-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0}
-.itcl.on .itcl-dot{background:var(--teal);box-shadow:0 0 6px var(--teal)}
-.itcl-amt{margin-left:auto;font-weight:600}
-.itcl.total .itcl-amt{color:var(--teal)}
+.itcr:last-child{border-bottom:none}
+.itcr.on{color:var(--text)}
+.itcr-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:all .3s}
+.itcr.on .itcr-dot{background:var(--teal);box-shadow:0 0 6px rgba(0,212,184,.5)}
+.itcr-amt{margin-left:auto;font-weight:600}
+.itcr.total .itcr-amt{color:var(--teal)}
 
 /* VIAB NOTE */
-.viab-note{
-  background:rgba(0,229,200,0.05);
-  border:1px solid rgba(0,229,200,0.15);
-  border-radius:8px;padding:14px 18px;
-  font-size:14px;font-weight:300;color:var(--text);
-  line-height:1.65;font-style:italic;
+.vnote{
+  background:rgba(0,212,184,.04);border:1px solid rgba(0,212,184,.12);
+  border-radius:8px;padding:12px 16px;font-size:13px;font-weight:300;
+  color:var(--text2);line-height:1.65;
 }
 
 /* SOURCES */
 .src-btn{
   background:none;border:none;cursor:pointer;
-  font-family:'JetBrains Mono',monospace;font-size:9px;
-  letter-spacing:2px;color:var(--muted);text-transform:uppercase;
-  display:flex;align-items:center;gap:6px;padding:0;transition:color .2s;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;padding:0;transition:color .15s;
 }
 .src-btn:hover{color:var(--teal)}
-.src-wrap{display:none;margin-top:14px;display:none;flex-direction:column;gap:0}
-.src-wrap.open{display:flex}
-.src-item{
-  font-family:'JetBrains Mono',monospace;font-size:8px;
-  color:var(--muted);letter-spacing:.5px;line-height:1.8;
-  padding:7px 0;border-bottom:1px solid var(--border);
-}
-.src-item:last-child{border-bottom:none}
-.src-item span{color:var(--teal);font-weight:600}
+.src-wrap{display:none;margin-top:12px;flex-direction:column;gap:0}
+.src-wrap.on{display:flex}
+.sri{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);line-height:1.8;padding:6px 0;border-bottom:1px solid var(--border)}
+.sri:last-child{border-bottom:none}
+.sri span{color:var(--teal)}
 
 /* MODAL */
-.overlay{
-  display:none;position:fixed;inset:0;z-index:100;
-  background:rgba(8,12,20,0.85);backdrop-filter:blur(12px);
-  align-items:center;justify-content:center;
-}
+.overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(5,8,15,.88);backdrop-filter:blur(12px);align-items:center;justify-content:center}
 .overlay.open{display:flex}
-.modal{
-  background:#0d1525;border:1px solid var(--border2);
-  border-radius:20px;width:92%;max-width:880px;
-  max-height:90vh;overflow-y:auto;
-}
-.modal-top{
-  padding:28px 32px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.modal-h{font-size:24px;font-weight:800;letter-spacing:-0.5px}
-.modal-x{
-  background:var(--glass);border:1px solid var(--border);
-  color:var(--muted);width:36px;height:36px;border-radius:8px;
-  cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:92%;max-width:840px;max-height:90vh;overflow-y:auto}
+.modal-top{padding:24px 28px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-h{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px}
+.modal-x{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:34px;height:34px;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .modal-x:hover{border-color:var(--teal);color:var(--teal)}
-.modal-note{
-  padding:14px 32px;background:rgba(0,229,200,0.04);
-  border-bottom:1px solid var(--border);
-  font-family:'JetBrains Mono',monospace;font-size:9px;
-  letter-spacing:2px;color:var(--muted);line-height:2;text-transform:uppercase;
-}
+.modal-note{padding:12px 28px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);line-height:1.7}
 .modal-note strong{color:var(--teal)}
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-.plan{
-  padding:28px 24px;border-right:1px solid var(--border);
-  display:flex;flex-direction:column;gap:14px;
-}
+.plans{display:grid;grid-template-columns:repeat(3,1fr)}
+.plan{padding:24px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
 .plan:last-child{border-right:none}
-.plan.pro{background:rgba(0,229,200,0.03)}
-.plan-tier{
-  font-family:'JetBrains Mono',monospace;
-  font-size:8px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;
-}
-.plan.pro .plan-tier{color:var(--teal)}
-.plan-name{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
-.plan-price{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--muted);letter-spacing:1px;
-  border-top:1px solid var(--border);padding-top:10px;
-}
+.plan.rec{background:rgba(0,212,184,.03)}
+.plan-tier{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
+.plan.rec .plan-tier{color:var(--teal)}
+.plan-n{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px}
+.plan-p{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px}
 .plan-feats{flex:1;display:flex;flex-direction:column;gap:0}
-.pf{
-  font-family:'JetBrains Mono',monospace;font-size:9px;
-  color:var(--muted);letter-spacing:1px;line-height:1.5;
-  padding:7px 0;border-bottom:1px solid var(--border);
-  display:flex;gap:8px;align-items:flex-start;
-}
-.pf::before{content:'→';color:var(--teal);flex-shrink:0;margin-top:1px}
-.plan-btn{
-  display:block;text-align:center;padding:12px;border-radius:8px;
-  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;
-  text-transform:uppercase;text-decoration:none;
-  border:1px solid var(--border2);color:var(--muted);transition:all .2s;
-}
+.pf{font-size:11px;color:var(--text3);padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:7px}
+.pf::before{content:'→';color:var(--teal);flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:10px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:.2px;text-decoration:none;border:1px solid var(--border2);color:var(--text2);transition:all .15s}
 .plan-btn:hover{border-color:var(--teal);color:var(--teal)}
-.plan.pro .plan-btn{
-  background:linear-gradient(135deg,var(--teal),var(--teal2));
-  color:#080c14;border-color:transparent;font-weight:700;
-}
-.plan.pro .plan-btn:hover{box-shadow:0 4px 20px rgba(0,229,200,0.3)}
-.wl-badge{
-  font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;
-  color:var(--teal);border:1px solid rgba(0,229,200,0.3);
-  background:rgba(0,229,200,0.06);padding:4px 10px;border-radius:4px;
-  text-transform:uppercase;display:inline-block;margin-bottom:4px;
-}
-.modal-foot{
-  padding:16px 32px;border-top:1px solid var(--border);
-  font-family:'JetBrains Mono',monospace;font-size:9px;
-  color:var(--muted);letter-spacing:1px;text-align:center;
-}
-.modal-foot a{color:var(--teal);text-decoration:none}
+.plan.rec .plan-btn{background:var(--teal);color:var(--bg);border-color:transparent}
+.plan.rec .plan-btn:hover{box-shadow:0 0 16px var(--teal-glow)}
+.wlb{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--teal);border:1px solid rgba(0,212,184,.25);padding:3px 8px;border-radius:4px;display:inline-block;margin-bottom:3px}
+.mfoot{padding:14px 28px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center}
+.mfoot a{color:var(--teal);text-decoration:none}
 
 /* FOOTER */
-.site-foot{
-  position:relative;z-index:5;
-  border-top:1px solid var(--border);
-  padding:22px 40px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
-  background:rgba(8,12,20,0.6);
-}
-.sf-l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
-.sf-l strong{color:var(--teal)}
-.sf-links{display:flex;gap:18px}
-.sf-links a{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
-.sf-links a:hover{color:var(--teal)}
-.disc{
-  position:relative;z-index:5;
-  padding:0 40px 28px;
-  font-family:'JetBrains Mono',monospace;font-size:8px;
-  color:var(--muted2);letter-spacing:1px;line-height:2;max-width:900px;
-}
+footer{position:relative;z-index:5;border-top:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.fl{font-size:11px;color:var(--text3)}
+.fl strong{color:var(--text2)}
+.fr{display:flex;gap:16px}
+.fr a{font-size:11px;color:var(--text3);text-decoration:none;transition:color .15s}
+.fr a:hover{color:var(--teal)}
+.disc{position:relative;z-index:5;padding:0 32px 24px;font-size:10px;color:var(--text3);line-height:1.9;max-width:860px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
 
 /* ANIMATIONS */
-@keyframes fi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.an{animation:fi .45s ease both}
-.an1{animation-delay:.04s}.an2{animation-delay:.09s}.an3{animation-delay:.14s}
-.an4{animation-delay:.19s}.an5{animation-delay:.24s}.an6{animation-delay:.29s}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.an{animation:fi .4s ease both}
+.a1{animation-delay:.04s}.a2{animation-delay:.08s}.a3{animation-delay:.12s}
+.a4{animation-delay:.16s}.a5{animation-delay:.20s}.a6{animation-delay:.24s}
 
-@media(max-width:900px){
-  nav{padding:0 20px}
-  .nav-center,.nav-link{display:none}
-  .hero{grid-template-columns:1fr;gap:40px;padding:48px 20px 40px}
-  .hero-stats{display:none}
-  .workspace{grid-template-columns:1fr;padding:0 20px 60px}
-  .kmetrics{grid-template-columns:repeat(2,1fr)}
-  .plans-grid{grid-template-columns:1fr}
+@media(max-width:860px){
+  nav{padding:0 16px}
+  .nav-mid{display:none}
+  .hero{padding:48px 16px 36px}
+  .layout{grid-template-columns:1fr;padding:0 16px 48px}
+  .stats4{grid-template-columns:repeat(2,1fr)}
+  .plans{grid-template-columns:1fr}
   .plan{border-right:none;border-bottom:1px solid var(--border)}
-  .site-foot,.disc{padding-left:20px;padding-right:20px}
-  .rsec{padding:18px}
-  .bess-layout{flex-direction:column}
-  .ticker{padding:10px 20px}
+  footer,.disc{padding-left:16px;padding-right:16px}
+  .rsec{padding:16px}
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <div class="nav-logo">
-    <span class="b">BESS</span><span class="rest">iq</span>
-    <span class="iq">BETA</span>
-  </div>
-  <div class="nav-center">
-    <div class="dot-live"></div>
-    <span>API ONLINE</span>
-  </div>
+  <a class="logo" href="#">
+    <div class="logo-dot"></div>
+    BESSiq
+  </a>
+  <div class="nav-mid">Battery Storage Sizing Intelligence</div>
   <div class="nav-right">
-    <a class="nav-link" href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
-    <a class="nav-link" href="mailto:support@solartruth.app">Contact</a>
-    <button class="btn-plans" onclick="openPlans()">Plans &amp; Access</button>
+    <a class="nav-a" href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
+    <a class="nav-a" href="mailto:support@solartruth.app">Contact</a>
+    <button class="btn-primary" onclick="openPlans()">Plans &amp; Access</button>
   </div>
 </nav>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-label">SOURCES</div>
-  <div class="ticker-scroll">
-    <div class="ticker-inner">
-      <span>NREL ATB 2024 Commercial BESS</span>
-      <span>PNNL-33283 Mongird et al. 2022</span>
-      <span>IRA 2022 §48E ITC Stacking to 50%</span>
-      <span>Cole &amp; Karmakar 2023 NREL/TP-6A40-85332</span>
-      <span>Neubauer &amp; Simpson 2015 NREL/TP-5400-63162</span>
-      <span>OpenEI Utility Rate Database 2024</span>
-      <span>Luthander et al. 2015 Renewable Energy 76</span>
-      <span>Jordan &amp; Kurtz 2013 Progress in PV</span>
-      <span>NREL ATB 2024 Commercial BESS</span>
-      <span>PNNL-33283 Mongird et al. 2022</span>
-      <span>IRA 2022 §48E ITC Stacking to 50%</span>
-      <span>Cole &amp; Karmakar 2023 NREL/TP-6A40-85332</span>
-      <span>Neubauer &amp; Simpson 2015 NREL/TP-5400-63162</span>
-      <span>OpenEI Utility Rate Database 2024</span>
-      <span>Luthander et al. 2015 Renewable Energy 76</span>
-      <span>Jordan &amp; Kurtz 2013 Progress in PV</span>
-    </div>
-  </div>
-</div>
-
-<!-- HERO -->
 <section class="hero">
-  <div>
-    <div class="hero-tag">Battery Storage Sizing Intelligence</div>
-    <h1 class="hero-h1">
-      Size your storage.<br>
-      <span class="grad">Defend your numbers.</span>
-    </h1>
-    <p class="hero-sub">Every figure cited to its primary government source. NREL ATB 2024 CAPEX. PNNL LCOS validation. IRA 2022 ITC stacking to 50%. No black boxes. No vendor lock-in.</p>
-    <div class="hero-pills">
-      <span class="pill">NREL ATB 2024</span>
-      <span class="pill">PNNL-33283</span>
-      <span class="pill">IRA 2022 §48E</span>
-      <span class="pill">OpenEI Rates</span>
-      <span class="pill">3 Chemistries</span>
-    </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hstat"><span class="hstat-l">ATB Cost Scenarios</span><span class="hstat-v">3<span class="hstat-u">scenarios</span></span></div>
-    <div class="hstat"><span class="hstat-l">Max ITC Credit</span><span class="hstat-v">50<span class="hstat-u">%</span></span></div>
-    <div class="hstat"><span class="hstat-l">Primary Sources</span><span class="hstat-v">14<span class="hstat-u">citations</span></span></div>
-    <div class="hstat"><span class="hstat-l">Battery Chemistries</span><span class="hstat-v">3<span class="hstat-u">types</span></span></div>
-    <div class="hstat"><span class="hstat-l">States Covered</span><span class="hstat-v">26<span class="hstat-u">US states</span></span></div>
+  <div class="hero-eyebrow">Commercial &amp; Industrial Storage</div>
+  <h1>Size your storage.<br><span class="accent">Defend every number.</span></h1>
+  <p class="hero-sub">NREL ATB 2024 CAPEX. PNNL-validated LCOS. IRA 2022 ITC stacking to 50%. Every figure traced to its primary source — no black boxes, no vendor lock-in.</p>
+  <div class="hero-meta">
+    <span class="meta-item">NREL ATB 2024</span>
+    <span class="meta-item">PNNL-33283</span>
+    <span class="meta-item">IRA 2022 §48E</span>
+    <span class="meta-item">OpenEI 2024</span>
+    <span class="meta-item">3 chemistries</span>
+    <span class="meta-item">26 US states</span>
   </div>
 </section>
 
-<!-- WORKSPACE -->
-<div class="workspace">
+<div class="layout">
 
-  <!-- FORM CARD -->
-  <div class="card">
-    <div class="card-head">
-      <span class="card-title">Site Parameters</span>
-      <span class="card-num">§ 01</span>
+  <!-- FORM -->
+  <div class="panel">
+    <div class="panel-hd">
+      <span class="panel-hd-label">Site Parameters</span>
+      <span class="panel-hd-n">01</span>
     </div>
-    <div class="card-body">
+    <div class="panel-body">
       <div class="fstack">
+
+        <div class="demo-strip">
+          <div class="demo-strip-title">Try it free — no account needed</div>
+          <div class="demo-strip-body">Your first analysis runs directly from our server. Enter parameters and click Run — results appear instantly. A subscription unlocks Pro features.</div>
+        </div>
 
         <div class="frow">
           <div class="field">
             <label>Peak Demand <span class="req">*</span></label>
-            <input id="peak" type="number" value="250" min="10" max="50000" placeholder="250">
-            <span class="f-hint">kW</span>
+            <input id="peak" type="number" value="250" min="10" max="50000" placeholder="kW">
           </div>
           <div class="field">
             <label>State <span class="req">*</span></label>
@@ -824,13 +597,12 @@ nav{
         <div class="frow">
           <div class="field">
             <label>Electricity Rate <span class="req">*</span></label>
-            <input id="rate" type="number" value="0.085" step="0.001" min="0.01" max="2">
-            <span class="f-hint">$/kWh blended</span>
+            <input id="rate" type="number" value="0.085" step="0.001" min="0.01" max="2" placeholder="$/kWh">
           </div>
           <div class="field">
             <label>Annual Consumption</label>
             <input id="cons" type="number" value="2800000" placeholder="kWh/yr">
-            <span class="f-hint">Pro — unlocks optimal</span>
+            <span class="fhint">Pro feature</span>
           </div>
         </div>
 
@@ -847,97 +619,97 @@ nav{
           <div class="field">
             <label>Discharge Hours</label>
             <input id="hrs" type="number" value="4.0" step="0.5" min="1" max="8">
-            <span class="f-hint">1–8 hours</span>
           </div>
           <div class="field">
             <label>Shave Target</label>
             <input id="shave" type="number" value="0.20" step="0.05" min="0.05" max="0.50">
-            <span class="f-hint">fraction of peak</span>
+            <span class="fhint">fraction of peak</span>
           </div>
         </div>
 
-        <div class="key-box">
-          <div class="key-head">
-            RapidAPI Key <span style="font-size:8px;color:rgba(0,229,200,0.6)">REQUIRED</span>
-            <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get free key →</a>
+        <!-- KEY BOX — hidden until first run used -->
+        <div class="key-box" id="keyBox" style="display:none">
+          <div class="key-label">
+            RapidAPI Key — unlock more
+            <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get key →</a>
           </div>
           <div class="field">
-            <input id="apikey" type="password" placeholder="Paste your RapidAPI key (free or Pro)">
+            <input id="apikey" type="password" placeholder="Paste free or Pro key from RapidAPI">
           </div>
-          <div class="key-note">Free key → quick sizing · Pro key → all 3 ATB scenarios + NPV/IRR + ITC stacking. RapidAPI requires a key on all tiers to route requests.</div>
+          <div class="key-hint">Free key → 5 calls/min, quick sizing only · Pro key → all 3 ATB scenarios + NPV/IRR + ITC adder stacking</div>
         </div>
 
-        <div class="field">
-          <label>IRA 2022 ITC Adders <span style="color:var(--muted2)">Pro</span></label>
-          <div class="togrow">
-            <div class="tog" id="tog-dc" onclick="this.classList.toggle('on')">
-              <div class="tog-box">
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                  <path d="M1 3.5L3.5 6L8 1" stroke="#080c14" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+        <!-- ITC TOGGLES — hidden until key entered -->
+        <div id="itcSection" style="display:none">
+          <div class="field">
+            <label>IRA 2022 ITC Adders <span style="color:var(--text3)">Pro</span></label>
+            <div class="tog-grid">
+              <div class="tog" id="tog-dc" onclick="this.classList.toggle('on')">
+                <div class="tog-box"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#05080f" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                <span>Domestic Content +10%</span>
               </div>
-              <span class="tog-label">Domestic Content +10%</span>
-            </div>
-            <div class="tog" id="tog-ec" onclick="this.classList.toggle('on')">
-              <div class="tog-box">
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                  <path d="M1 3.5L3.5 6L8 1" stroke="#080c14" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+              <div class="tog" id="tog-ec" onclick="this.classList.toggle('on')">
+                <div class="tog-box"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#05080f" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                <span>Energy Community +10%</span>
               </div>
-              <span class="tog-label">Energy Community +10%</span>
             </div>
           </div>
         </div>
 
-        <div class="run-wrap">
-          <button class="run-btn" id="runBtn" onclick="go()">
-            <span class="bt">Run Analysis</span>
-            <span class="bs"><span class="ring"></span> Analysing…</span>
-          </button>
-          <div class="err-bar" id="errBar"></div>
+        <button class="run-btn" id="runBtn" onclick="go()">
+          <span class="t">Run Analysis</span>
+          <span class="s"><span class="ring"></span> Analysing…</span>
+        </button>
+
+        <div class="err" id="errDiv"></div>
+
+        <!-- GATE — shown after first free use -->
+        <div class="gate-strip" id="gateStrip">
+          <div class="gate-title">Want more from your analysis?</div>
+          <div class="gate-body">You have used your free demo. Subscribe to unlock unlimited analyses, all 3 NREL ATB scenarios, full NPV/IRR, and ITC adder stacking — or paste a free key above to continue with basic sizing.</div>
+          <div class="gate-btns">
+            <a class="gate-btn-free" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Free Plan</a>
+            <a class="gate-btn-pro" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get Pro — $99/mo</a>
+          </div>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- RESULTS CARD -->
-  <div class="results-card" id="resCard">
-    <div class="card-head">
-      <span class="card-title">Analysis Output</span>
-      <span class="card-num">§ 02</span>
+  <!-- RESULTS -->
+  <div class="res-panel" id="resPanel">
+    <div class="panel-hd">
+      <span class="panel-hd-label">Analysis Output</span>
+      <span class="panel-hd-n">02</span>
     </div>
 
-    <!-- EMPTY -->
     <div class="empty" id="emptyState">
       <div>
-        <div class="bat-cap-e"></div>
-        <div class="bat-body-e" id="batIdle">
-          <div class="bat-fill-e" id="batFillE"></div>
-          <div class="bat-glow"></div>
-          <div class="bat-pct-e" id="batPctE">—</div>
+        <div class="bat-c"></div>
+        <div class="bat-b" id="batB">
+          <div class="bat-f" id="batF"></div>
+          <div class="bat-p" id="batP">—</div>
         </div>
       </div>
-      <div class="empty-title">Awaiting analysis</div>
-      <div class="empty-sub">Enter site parameters and run</div>
+      <div class="empty-h">Awaiting input</div>
+      <div class="empty-p">Fill in site parameters and run the analysis</div>
     </div>
 
-    <!-- RESULTS -->
     <div class="rbody" id="rbody"></div>
   </div>
 
 </div>
 
-<!-- FOOTER -->
-<footer class="site-foot">
-  <div class="sf-l">© 2025 <strong>Tinashe Nedi</strong> · Powered by Solar + BESS Sizing API</div>
-  <div class="sf-links">
+<footer>
+  <div class="fl">© 2025 <strong>Tinashe Nedi</strong> · Powered by Solar + BESS Sizing API</div>
+  <div class="fr">
     <a href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">API Access</a>
     <a href="https://rapidapi.com/user/bethelnedi" target="_blank">All APIs</a>
     <a href="mailto:support@solartruth.app">Contact</a>
   </div>
 </footer>
-<div class="disc">Results based on NREL ATB 2024, PNNL-33283, and OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility subject to IRS qualification; consult a tax professional. Use custom_demand_rate for site-specific accuracy.</div>
+<div class="disc">Results based on NREL ATB 2024, PNNL-33283, OpenEI tariff data. For feasibility screening only — not financial, engineering, or tax advice. ITC eligibility subject to IRS qualification; consult a qualified tax professional.</div>
 
 <!-- MODAL -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closePlans()">
@@ -946,58 +718,49 @@ nav{
       <div class="modal-h">Plans &amp; Access</div>
       <button class="modal-x" onclick="closePlans()">✕</button>
     </div>
-    <div class="modal-note">
-      API access and platform access are separate. Free · Pro · Ultra — <strong>White label is Ultra only.</strong> Pro subscribers may not embed on a client domain.
-    </div>
-    <div class="plans-grid">
+    <div class="modal-note">API access and web tool access are separate. <strong>White label is Ultra only.</strong> Pro subscribers may not embed on a client domain without upgrading.</div>
+    <div class="plans">
       <div class="plan">
         <div class="plan-tier">Free</div>
-        <div class="plan-name">Basic</div>
-        <div class="plan-price">$0 / month · 5 calls/min</div>
+        <div class="plan-n">Basic</div>
+        <div class="plan-p">$0/month · 5 calls/min</div>
         <div class="plan-feats">
           <div class="pf">Quick BESS sizing</div>
           <div class="pf">ATB 2024 CAPEX mid scenario</div>
           <div class="pf">ITC 30% base</div>
-          <div class="pf">Demand charge + TOU savings</div>
-          <div class="pf">PNNL LCOS validated range</div>
-          <div class="pf">Viability verdict</div>
+          <div class="pf">Demand + TOU savings</div>
+          <div class="pf">PNNL LCOS range</div>
         </div>
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Get Free Key</a>
       </div>
-      <div class="plan pro">
+      <div class="plan rec">
         <div class="plan-tier">★ Recommended</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">$99 / month · 1,000 calls/hr</div>
+        <div class="plan-n">Pro</div>
+        <div class="plan-p">$99/month · 1,000 calls/hr</div>
         <div class="plan-feats">
           <div class="pf">All 3 ATB scenarios</div>
-          <div class="pf">Full NPV, IRR, LCOS per scenario</div>
+          <div class="pf">Full NPV, IRR, LCOS</div>
           <div class="pf">ITC adder stacking to 50%</div>
-          <div class="pf">Solar + BESS co-optimisation</div>
-          <div class="pf">Custom demand rate override</div>
-          <div class="pf">Load factor + WACC inputs</div>
+          <div class="pf">Solar + BESS co-sizing</div>
+          <div class="pf">Custom demand rate + WACC</div>
         </div>
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Subscribe to Pro</a>
       </div>
       <div class="plan">
-        <div class="wl-badge">★ White Label</div>
+        <div class="wlb">White Label</div>
         <div class="plan-tier">Ultra</div>
-        <div class="plan-name">Ultra</div>
-        <div class="plan-price">$299 / month · Requires Approval</div>
+        <div class="plan-n">Ultra</div>
+        <div class="plan-p">$299/month · Approval required</div>
         <div class="plan-feats">
-          <div class="pf">Everything in Pro</div>
+          <div class="pf">All Pro features</div>
           <div class="pf">Embed on your domain</div>
           <div class="pf">Your logo &amp; branding</div>
-          <div class="pf">Remove all attribution</div>
-          <div class="pf">Priority support</div>
+          <div class="pf">Remove attribution</div>
         </div>
         <a class="plan-btn" href="https://rapidapi.com/bethelnedi/api/solar-bess-sizing-dispatch-optimization-api/pricing" target="_blank">Apply for Ultra</a>
       </div>
     </div>
-    <div class="modal-foot">
-      Bundle: all 8 APIs from $249/month ·
-      <a href="mailto:support@solartruth.app">support@solartruth.app</a> ·
-      <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a>
-    </div>
+    <div class="mfoot">Bundle: all 8 APIs from $249/month · <a href="mailto:support@solartruth.app">support@solartruth.app</a> · <a href="https://rapidapi.com/user/bethelnedi" target="_blank">rapidapi.com/user/bethelnedi</a></div>
   </div>
 </div>
 
@@ -1008,23 +771,27 @@ const fN=(n,d=1)=>Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
 function openPlans(){$('overlay').classList.add('open')}
 function closePlans(){$('overlay').classList.remove('open')}
 
+// FREE DEMO — calls HF directly, no key needed, one use
+// After that: gate shown, key box revealed
+const HF_BASE='https://amfumu-solar-bess-api.hf.space';
+const RA_HOST='solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com';
+const RA_BASE='https://'+RA_HOST;
+
+let demoUsed = false;
+
 // idle battery
 (function(){
-  const f=$('batFillE'),p=$('batPctE');if(!f)return;
-  let v=20,up=true;
-  setInterval(()=>{
-    v+=up?.7:-.7;if(v>=70)up=false;if(v<=15)up=true;
-    f.style.height=v+'%';p.textContent=Math.round(v)+'%';
-  },80);
+  const f=$('batF'),p=$('batP');if(!f)return;
+  let v=18,up=true;
+  setInterval(()=>{v+=up?.6:-.6;if(v>=65)up=false;if(v<=14)up=true;f.style.height=v+'%';p.textContent=Math.round(v)+'%';},90);
 })();
 
-function cntUp(el,target,pre='',suf='',dec=0,dur=1000){
+function cntUp(el,tgt,pre='',suf='',dec=0,dur=900){
   const t0=performance.now();
   (function f(now){
-    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=target*e;
-    el.textContent=pre+fN(v,dec)+suf;
-    if(p<1)requestAnimationFrame(f);
-    else el.textContent=pre+fN(target,dec)+suf;
+    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=pre+fN(tgt*e,dec)+suf;
+    if(p<1)requestAnimationFrame(f);else el.textContent=pre+fN(tgt,dec)+suf;
   })(t0);
 }
 function fillBat(fe,pe,pct){
@@ -1033,11 +800,13 @@ function fillBat(fe,pe,pct){
     let c=0;const iv=setInterval(()=>{c=Math.min(c+2,pct);pe.textContent=c+'%';if(c>=pct)clearInterval(iv);},25);
   },400);
 }
-function showErr(m){const e=$('errBar');e.textContent='⚠ '+m;e.style.display='block';}
-function clearErr(){$('errBar').style.display='none';}
+function showErr(m){const e=$('errDiv');e.textContent='⚠ '+m;e.style.display='block';}
+function clearErr(){$('errDiv').style.display='none';}
 
-const HOST='solar-bess-sizing-dispatch-optimization-api.p.rapidapi.com';
-const BASE='https://'+HOST;
+// watch key input — show ITC toggles when key present
+$('apikey').addEventListener('input',function(){
+  $('itcSection').style.display=this.value.trim()?'block':'none';
+});
 
 async function go(){
   clearErr();
@@ -1048,24 +817,63 @@ async function go(){
     key=$('apikey').value.trim(),
     dc=$('tog-dc').classList.contains('on'),
     ec=$('tog-ec').classList.contains('on');
+
   if(!peak||peak<10){showErr('Peak demand must be at least 10 kW.');return;}
   if(!rate||rate<.01){showErr('Electricity rate is required.');return;}
-  if(!key){showErr('A RapidAPI key is required on all plans. Get a free key at rapidapi.com/bethelnedi — takes 30 seconds.');return;}
-  const btn=$('runBtn');btn.disabled=true;btn.classList.add('loading');
-  const hdrs={'Content-Type':'application/json','X-RapidAPI-Key':key,'X-RapidAPI-Host':HOST};
-  const isPro=key.length>15,useFull=isPro&&cons>0;
+
+  // If demo already used and no key, block
+  if(demoUsed && !key){
+    showErr('Your free demo has been used. Paste a RapidAPI key above to continue, or subscribe below.');
+    return;
+  }
+
+  const btn=$('runBtn');
+  btn.disabled=true;btn.classList.add('spin');
+
   try{
-    let r;
-    if(useFull){
-      r=await fetch(BASE+'/bess/optimal',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,annual_kwh_consumption:cons,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave,wacc:.07,domestic_content:dc,energy_community:ec})});
-    }else{
-      r=await fetch(BASE+'/bess/quick',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})});
+    let r,data;
+
+    if(!key && !demoUsed){
+      // FIRST RUN — direct to HF, no key needed
+      r=await fetch(HF_BASE+'/bess/quick',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})
+      });
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'Server error '+r.status+'. The API may be waking up — please try again in 30 seconds.');}
+      data=await r.json();data._mode='quick';data._demo=true;
+      demoUsed=true;
+      // Reveal key box and gate after render
+    } else {
+      // ALL SUBSEQUENT — through RapidAPI with key
+      if(!key){showErr('Paste your RapidAPI key to continue.');btn.disabled=false;btn.classList.remove('spin');return;}
+      const hdrs={'Content-Type':'application/json','X-RapidAPI-Key':key,'X-RapidAPI-Host':RA_HOST};
+      const isPro=key.length>30;
+      const useFull=isPro&&cons>0;
+      if(useFull){
+        r=await fetch(RA_BASE+'/bess/optimal',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,annual_kwh_consumption:cons,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave,wacc:.07,domestic_content:dc,energy_community:ec})});
+      }else{
+        r=await fetch(RA_BASE+'/bess/quick',{method:'POST',headers:hdrs,body:JSON.stringify({peak_demand_kw:peak,state,flat_rate_usd_kwh:rate,chemistry_type:chem,discharge_hours:hrs,shave_target_pct:shave})});
+      }
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'API error '+r.status+'. Check your key is valid and your plan includes this endpoint.');}
+      data=await r.json();data._mode=useFull?'optimal':'quick';
     }
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'API error '+r.status+'. Verify your key is correct and your plan includes this endpoint.');}
-    const d=await r.json();d._mode=useFull?'optimal':'quick';
-    render(d);
-  }catch(err){showErr(err.message||'Connection error. Try again.');}
-  finally{btn.disabled=false;btn.classList.remove('loading');}
+
+    render(data);
+
+    // After demo used: show gate + key box
+    if(demoUsed){
+      $('keyBox').style.display='block';
+      $('gateStrip').style.display='block';
+      // Scroll gate into view gently
+      setTimeout(()=>$('gateStrip').scrollIntoView({behavior:'smooth',block:'nearest'}),600);
+    }
+
+  }catch(err){
+    showErr(err.message||'Connection error. Try again in 30 seconds.');
+  }finally{
+    btn.disabled=false;btn.classList.remove('spin');
+  }
 }
 
 function render(d){
@@ -1084,132 +892,90 @@ function render(d){
     solS=d.annual_savings.solar_self_consumption_uplift_usd||0;
   }else{
     payback=d.financials_mid.simple_payback_yrs;lcos=d.financials_mid.lcos_usd_per_mwh;
-    savings=d.annual_savings.total_usd;netCap=d.capex_mid_scenario.net_capex_after_itc_usd;
-    totCap=d.capex_mid_scenario.total_capex_usd;itcPct=30;itcCredit=d.capex_mid_scenario.itc_30pct_usd;
+    savings=d.annual_savings.total_usd;
+    netCap=d.capex_mid_scenario.net_capex_after_itc_usd;
+    totCap=d.capex_mid_scenario.total_capex_usd;
+    itcPct=30;itcCredit=d.capex_mid_scenario.itc_30pct_usd;
     demS=d.annual_savings.demand_charge_usd;touS=d.annual_savings.tou_arbitrage_usd;
   }
 
   // TOP BAR
-  const bar=document.createElement('div');bar.className='rbar an an1';
-  bar.innerHTML=`<div class="rbar-label">${mode==='optimal'?'Pro Analysis · All ATB Scenarios':'Free Analysis · Mid Scenario'}</div><div class="viab-tag ${viab}">${viab}</div>`;
-  rb.appendChild(bar);
+  const tb=document.createElement('div');tb.className='rtop an a1';
+  const modeLabel=d._demo?'Free Demo · Quick Sizing':mode==='optimal'?'Pro Analysis · All ATB Scenarios':'Subscribed · Quick Sizing';
+  tb.innerHTML=`<div class="rtop-label">${modeLabel}</div><div class="vtag ${viab}">${viab}</div>`;
+  rb.appendChild(tb);
 
-  // KEY METRICS
-  const km=document.createElement('div');km.className='kmetrics an an2';
-  km.innerHTML=`
-    <div class="km"><div class="km-val tc" id="km-pay">—</div><div class="km-unit">years</div><div class="km-label">Payback</div></div>
-    <div class="km"><div class="km-val gc" id="km-sav">—</div><div class="km-unit">per year</div><div class="km-label">Annual Savings</div></div>
-    <div class="km"><div class="km-val" id="km-net">—</div><div class="km-unit">after ITC</div><div class="km-label">Net CAPEX</div></div>
-    <div class="km"><div class="km-val bc" id="km-lcos">—</div><div class="km-unit">$/MWh</div><div class="km-label">LCOS</div></div>`;
-  rb.appendChild(km);
+  // 4 STATS
+  const s4=document.createElement('div');s4.className='stats4 an a2';
+  s4.innerHTML=`
+    <div class="s4"><div class="s4-n tc" id="n-pay">—</div><div class="s4-u">years</div><div class="s4-l">Payback</div></div>
+    <div class="s4"><div class="s4-n gc" id="n-sav">—</div><div class="s4-u">per year</div><div class="s4-l">Savings</div></div>
+    <div class="s4"><div class="s4-n" id="n-net">—</div><div class="s4-u">after ITC</div><div class="s4-l">Net CAPEX</div></div>
+    <div class="s4"><div class="s4-n bc" id="n-lcos">—</div><div class="s4-u">$/MWh</div><div class="s4-l">LCOS</div></div>`;
+  rb.appendChild(s4);
   setTimeout(()=>{
-    cntUp($('km-pay'),payback,'','yr',1);
-    cntUp($('km-sav'),savings,'$','',0);
-    cntUp($('km-net'),netCap,'$','',0);
-    cntUp($('km-lcos'),lcos,'$','',1);
-  },120);
+    cntUp($('n-pay'),payback,'','yr',1);
+    cntUp($('n-sav'),savings,'$','',0);
+    cntUp($('n-net'),netCap,'$','',0);
+    cntUp($('n-lcos'),lcos,'$','',1);
+  },100);
 
   // VIAB NOTE
   if(d.viability_note){
-    const vn=document.createElement('div');vn.className='rsec an an3';
-    vn.innerHTML=`<div class="viab-note">${d.viability_note}</div>`;
+    const vn=document.createElement('div');vn.className='rsec an a3';
+    vn.innerHTML=`<div class="vnote">${d.viability_note}</div>`;
     rb.appendChild(vn);
   }
 
   // SIZING
   const pwr=sz.bess_power_kw,kwh=sz.bess_nameplate_kwh,usable=sz.bess_usable_kwh;
-  const batPct=Math.min(100,Math.round(usable/kwh*100));
-  const sc=document.createElement('div');sc.className='rsec an an3';
-  sc.innerHTML=`
-    <div class="sec-h">
-      <div class="sec-title">Optimal Sizing</div>
-      <div class="sec-cite">Neubauer &amp; Simpson (2015) NREL/TP-5400-63162</div>
-    </div>
-    <div class="bess-layout">
-      <div class="bat-result-wrap">
-        <div class="bat-r-cap"></div>
-        <div class="bat-r-body"><div class="bat-r-fill" id="brf"></div><div class="bat-r-pct" id="brp">0%</div></div>
-        <div class="bat-r-label">${(ch.type||'lfp').toUpperCase()}</div>
+  const bp=Math.min(100,Math.round(usable/kwh*100));
+  const sec=document.createElement('div');sec.className='rsec an a3';
+  sec.innerHTML=`
+    <div class="sh"><div class="sh-title">Optimal Sizing</div><div class="sh-cite">Neubauer &amp; Simpson (2015) NREL/TP-5400-63162</div></div>
+    <div class="siz-layout">
+      <div class="bat-res-wrap">
+        <div class="br-c"></div>
+        <div class="br-b"><div class="br-f" id="brf"></div><div class="br-p" id="brp">0%</div></div>
+        <div class="br-l">${(ch.type||'lfp').toUpperCase()}</div>
       </div>
-      <div class="specs-list">
-        <div class="spec-row"><span class="spec-k">BESS Power</span><span class="spec-v">${fN(pwr,0)}<small>kW</small></span></div>
-        <div class="spec-row"><span class="spec-k">Nameplate Energy</span><span class="spec-v">${fN(kwh,0)}<small>kWh</small></span></div>
-        <div class="spec-row"><span class="spec-k">Usable Energy</span><span class="spec-v">${fN(usable,0)}<small>kWh</small></span></div>
-        <div class="spec-row"><span class="spec-k">Discharge Duration</span><span class="spec-v">${sz.discharge_hours}<small>h</small></span></div>
-        <div class="spec-row"><span class="spec-k">RTE (AC-AC)</span><span class="spec-v">${ch.rte_ac_ac||0.85}<small>per ATB2024b</small></span></div>
-        <div class="spec-row"><span class="spec-k">Calendar Life</span><span class="spec-v">${ch.calendar_life_yrs||15}<small>years</small></span></div>
+      <div class="siz-specs">
+        <div class="srow"><span class="sk">BESS Power</span><span class="sv">${fN(pwr,0)}<small>kW</small></span></div>
+        <div class="srow"><span class="sk">Nameplate Energy</span><span class="sv">${fN(kwh,0)}<small>kWh</small></span></div>
+        <div class="srow"><span class="sk">Usable Energy</span><span class="sv">${fN(usable,0)}<small>kWh</small></span></div>
+        <div class="srow"><span class="sk">Discharge Duration</span><span class="sv">${sz.discharge_hours}<small>h</small></span></div>
+        <div class="srow"><span class="sk">RTE (AC-AC)</span><span class="sv">${ch.rte_ac_ac||0.85}<small>ATB2024b</small></span></div>
+        <div class="srow"><span class="sk">Calendar Life</span><span class="sv">${ch.calendar_life_yrs||15}<small>yr</small></span></div>
       </div>
     </div>`;
-  rb.appendChild(sc);
-  setTimeout(()=>fillBat($('brf'),$('brp'),batPct),300);
+  rb.appendChild(sec);
+  setTimeout(()=>fillBat($('brf'),$('brp'),bp),300);
 
   // SAVINGS
   const maxS=Math.max(demS,touS,solS,1);
-  const sv=document.createElement('div');sv.className='rsec an an4';
+  const sv=document.createElement('div');sv.className='rsec an a4';
   sv.innerHTML=`
-    <div class="sec-h">
-      <div class="sec-title">Annual Savings Breakdown</div>
-      <div class="sec-cite">OpenEI Utility Rate DB 2024</div>
-    </div>
-    <div class="savbars">
-      <div class="savrow">
-        <div class="savtop"><span class="savlabel">Demand Charge Reduction</span><span class="savval">${f$(demS)}</span></div>
-        <div class="savtrack"><div class="savfill d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div>
-      </div>
-      <div class="savrow">
-        <div class="savtop"><span class="savlabel">TOU Arbitrage</span><span class="savval">${f$(touS)}</span></div>
-        <div class="savtrack"><div class="savfill t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div>
-      </div>
-      ${solS>0?`<div class="savrow">
-        <div class="savtop"><span class="savlabel">Solar Self-Consumption Uplift</span><span class="savval">${f$(solS)}</span></div>
-        <div class="savtrack"><div class="savfill u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div>
-      </div>`:''}
+    <div class="sh"><div class="sh-title">Annual Savings</div><div class="sh-cite">OpenEI Utility Rate DB 2024</div></div>
+    <div class="sav-stack">
+      <div class="savrow"><div class="savtop"><span class="savlabel">Demand Charge Reduction</span><span class="savval">${f$(demS)}</span></div><div class="savtrack"><div class="savfill sf-d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div></div>
+      <div class="savrow"><div class="savtop"><span class="savlabel">TOU Arbitrage</span><span class="savval">${f$(touS)}</span></div><div class="savtrack"><div class="savfill sf-t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div></div>
+      ${solS>0?`<div class="savrow"><div class="savtop"><span class="savlabel">Solar Self-Consumption Uplift</span><span class="savval">${f$(solS)}</span></div><div class="savtrack"><div class="savfill sf-u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div></div>`:''}
     </div>`;
   rb.appendChild(sv);
-  setTimeout(()=>{['sf-d','sf-t','sf-s'].forEach(id=>{const el=$(id);if(el)el.style.width=el.dataset.w+'%';});},400);
+  setTimeout(()=>{['sf-d','sf-t','sf-s'].forEach(id=>{const e=$(id);if(e)e.style.width=e.dataset.w+'%';});},400);
 
-  // ATB SCENARIOS (Pro)
+  // ATB SCENARIOS (Pro only)
   if(mode==='optimal'&&d.atb_scenarios){
     const s2=d.atb_scenarios;
-    const st=document.createElement('div');st.className='rsec an an4';
+    const st=document.createElement('div');st.className='rsec an a4';
     st.innerHTML=`
-      <div class="sec-h">
-        <div class="sec-title">NREL ATB 2024 — Three Cost Scenarios</div>
-        <div class="sec-cite">Cole &amp; Karmakar 2023</div>
-      </div>
-      <div class="scen-scroll"><table class="stab">
+      <div class="sh"><div class="sh-title">NREL ATB 2024 — Three Cost Scenarios</div><div class="sh-cite">Cole &amp; Karmakar 2023</div></div>
+      <div class="scwrap"><table class="sctab">
         <thead><tr><th>Scenario</th><th>CAPEX</th><th>ITC</th><th>Net CAPEX</th><th>LCOS</th><th>NPV</th><th>IRR</th><th>Payback</th></tr></thead>
         <tbody>
-          <tr>
-            <td class="tb">Conservative</td>
-            <td>${f$(s2.high.capex.total_capex_usd)}</td>
-            <td>${f$(s2.high.itc.itc_credit_usd)}</td>
-            <td>${f$(s2.high.itc.net_capex_usd)}</td>
-            <td>$${s2.high.lcos.lcos_usd_per_mwh}/MWh</td>
-            <td class="tg">${f$(s2.high.financials.npv_usd)}</td>
-            <td>${s2.high.financials.irr_pct}%</td>
-            <td>${s2.high.financials.simple_payback_yrs}yr</td>
-          </tr>
-          <tr class="midrow">
-            <td>Moderate<span class="rec">REC</span></td>
-            <td>${f$(s2.mid.capex.total_capex_usd)}</td>
-            <td>${f$(s2.mid.itc.itc_credit_usd)}</td>
-            <td>${f$(s2.mid.itc.net_capex_usd)}</td>
-            <td>$${s2.mid.lcos.lcos_usd_per_mwh}/MWh</td>
-            <td class="tg">${f$(s2.mid.financials.npv_usd)}</td>
-            <td>${s2.mid.financials.irr_pct}%</td>
-            <td>${s2.mid.financials.simple_payback_yrs}yr</td>
-          </tr>
-          <tr>
-            <td class="tg">Advanced</td>
-            <td>${f$(s2.low.capex.total_capex_usd)}</td>
-            <td>${f$(s2.low.itc.itc_credit_usd)}</td>
-            <td>${f$(s2.low.itc.net_capex_usd)}</td>
-            <td>$${s2.low.lcos.lcos_usd_per_mwh}/MWh</td>
-            <td class="tg">${f$(s2.low.financials.npv_usd)}</td>
-            <td>${s2.low.financials.irr_pct}%</td>
-            <td>${s2.low.financials.simple_payback_yrs}yr</td>
-          </tr>
+          <tr><td class="tb">Conservative</td><td>${f$(s2.high.capex.total_capex_usd)}</td><td>${f$(s2.high.itc.itc_credit_usd)}</td><td>${f$(s2.high.itc.net_capex_usd)}</td><td>$${s2.high.lcos.lcos_usd_per_mwh}/MWh</td><td class="tg">${f$(s2.high.financials.npv_usd)}</td><td>${s2.high.financials.irr_pct}%</td><td>${s2.high.financials.simple_payback_yrs}yr</td></tr>
+          <tr class="mr"><td>Moderate<span class="rb">REC</span></td><td>${f$(s2.mid.capex.total_capex_usd)}</td><td>${f$(s2.mid.itc.itc_credit_usd)}</td><td>${f$(s2.mid.itc.net_capex_usd)}</td><td>$${s2.mid.lcos.lcos_usd_per_mwh}/MWh</td><td class="tg">${f$(s2.mid.financials.npv_usd)}</td><td>${s2.mid.financials.irr_pct}%</td><td>${s2.mid.financials.simple_payback_yrs}yr</td></tr>
+          <tr><td class="tg">Advanced</td><td>${f$(s2.low.capex.total_capex_usd)}</td><td>${f$(s2.low.itc.itc_credit_usd)}</td><td>${f$(s2.low.itc.net_capex_usd)}</td><td>$${s2.low.lcos.lcos_usd_per_mwh}/MWh</td><td class="tg">${f$(s2.low.financials.npv_usd)}</td><td>${s2.low.financials.irr_pct}%</td><td>${s2.low.financials.simple_payback_yrs}yr</td></tr>
         </tbody>
       </table></div>`;
     rb.appendChild(st);
@@ -1217,38 +983,31 @@ function render(d){
 
   // ITC
   const adders=mode==='optimal'?(d.atb_scenarios?.mid?.itc?.adders_applied||{}):{};
-  const itcEl=document.createElement('div');itcEl.className='rsec an an5';
+  const itcEl=document.createElement('div');itcEl.className='rsec an a5';
   itcEl.innerHTML=`
-    <div class="sec-h">
-      <div class="sec-title">IRA 2022 ITC</div>
-      <div class="sec-cite">§48E · §48C(e)(2)(A) · §48E(b)(3)(B)</div>
-    </div>
-    <div class="itc-row">
-      <div class="itc-num" id="itcBig">—<small>%</small></div>
-      <div class="itc-lines">
-        <div class="itcl on"><div class="itcl-dot"></div>Base 30% · IRA 2022 §48E<span class="itcl-amt">${f$(totCap*.30)}</span></div>
-        <div class="itcl ${adders.domestic_content?'on':''}"><div class="itcl-dot"></div>Domestic Content +10%<span class="itcl-amt">${adders.domestic_content?f$(totCap*.10):'—'}</span></div>
-        <div class="itcl ${adders.energy_community?'on':''}"><div class="itcl-dot"></div>Energy Community +10%<span class="itcl-amt">${adders.energy_community?f$(totCap*.10):'—'}</span></div>
-        <div class="itcl on total"><div class="itcl-dot"></div><strong>Total Credit</strong><span class="itcl-amt">${f$(itcCredit)}</span></div>
+    <div class="sh"><div class="sh-title">IRA 2022 Investment Tax Credit</div><div class="sh-cite">§48E · §48C(e)(2)(A) · §48E(b)(3)(B)</div></div>
+    <div class="itc-layout">
+      <div class="itc-big" id="itcBig">—<small>%</small></div>
+      <div class="itc-list">
+        <div class="itcr on"><div class="itcr-dot"></div>Base 30% · IRA 2022 §48E<span class="itcr-amt">${f$(totCap*.30)}</span></div>
+        <div class="itcr ${adders.domestic_content?'on':''}"><div class="itcr-dot"></div>Domestic Content +10%<span class="itcr-amt">${adders.domestic_content?f$(totCap*.10):'—'}</span></div>
+        <div class="itcr ${adders.energy_community?'on':''}"><div class="itcr-dot"></div>Energy Community +10%<span class="itcr-amt">${adders.energy_community?f$(totCap*.10):'—'}</span></div>
+        <div class="itcr on total"><div class="itcr-dot"></div><strong>Total Credit</strong><span class="itcr-amt">${f$(itcCredit)}</span></div>
       </div>
     </div>`;
   rb.appendChild(itcEl);
-  setTimeout(()=>{cntUp($('itcBig'),itcPct,'','',0,800);},150);
-  setTimeout(()=>{const el=$('itcBig');if(el)el.innerHTML=fN(itcPct,0)+'<small>%</small>';},1050);
+  setTimeout(()=>{cntUp($('itcBig'),itcPct,'','',0,800);},100);
+  setTimeout(()=>{const e=$('itcBig');if(e)e.innerHTML=fN(itcPct,0)+'<small>%</small>';},1000);
 
   // SOURCES
   if(d.master_source_list){
-    const srcEl=document.createElement('div');srcEl.className='rsec an an6';
-    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="src-item"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
-    srcEl.innerHTML=`
-      <button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('open');this.textContent=w.classList.contains('open')?'▲ Hide citations':'▼ View all citations (${Object.keys(d.master_source_list).length})'">
-        ▼ View all citations (${Object.keys(d.master_source_list).length})
-      </button>
-      <div class="src-wrap">${rows}</div>`;
-    rb.appendChild(srcEl);
+    const se=document.createElement('div');se.className='rsec an a6';
+    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="sri"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
+    se.innerHTML=`<button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('on');this.textContent=w.classList.contains('on')?'▲ Hide citations':'▼ Citations (${Object.keys(d.master_source_list).length})">▼ Citations (${Object.keys(d.master_source_list).length})</button><div class="src-wrap">${rows}</div>`;
+    rb.appendChild(se);
   }
 
-  if(window.innerWidth<900)$('resCard').scrollIntoView({behavior:'smooth'});
+  if(window.innerWidth<860)$('resPanel').scrollIntoView({behavior:'smooth'});
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
