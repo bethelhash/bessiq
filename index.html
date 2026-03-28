@@ -970,13 +970,12 @@ function render(d){
   // SAVINGS
   const maxS=Math.max(demS,touS,solS,1);
   const sv=document.createElement('div');sv.className='rsec an a4';
-  sv.innerHTML=`
-    <div class="sh"><div class="sh-title">Annual Savings</div><div class="sh-cite">OpenEI Utility Rate DB 2024</div></div>
-    <div class="sav-stack">
-      <div class="savrow"><div class="savtop"><span class="savlabel">Demand Charge Reduction</span><span class="savval">${f$(demS)}</span></div><div class="savtrack"><div class="savfill sf-d" id="sf-d" data-w="${(demS/maxS*100).toFixed(1)}"></div></div></div>
-      <div class="savrow"><div class="savtop"><span class="savlabel">TOU Arbitrage</span><span class="savval">${f$(touS)}</span></div><div class="savtrack"><div class="savfill sf-t" id="sf-t" data-w="${(touS/maxS*100).toFixed(1)}"></div></div></div>
-      ${solS>0?`<div class="savrow"><div class="savtop"><span class="savlabel">Solar Self-Consumption Uplift</span><span class="savval">${f$(solS)}</span></div><div class="savtrack"><div class="savfill sf-u" id="sf-s" data-w="${(solS/maxS*100).toFixed(1)}"></div></div></div>`:''}
-    </div>`;
+    var savHtml='<div class="sh"><div class="sh-title">Annual Savings</div><div class="sh-cite">OpenEI Utility Rate DB 2024</div></div><div class="sav-stack">';
+  savHtml+='<div class="savrow"><div class="savtop"><span class="savlabel">Demand Charge Reduction</span><span class="savval">'+f$(demS)+'</span></div><div class="savtrack"><div class="savfill sf-d" id="sf-d" data-w="'+(demS/maxS*100).toFixed(1)+'"></div></div></div>';
+  savHtml+='<div class="savrow"><div class="savtop"><span class="savlabel">TOU Arbitrage</span><span class="savval">'+f$(touS)+'</span></div><div class="savtrack"><div class="savfill sf-t" id="sf-t" data-w="'+(touS/maxS*100).toFixed(1)+'"></div></div></div>';
+  if(solS>0) savHtml+='<div class="savrow"><div class="savtop"><span class="savlabel">Solar Self-Consumption Uplift</span><span class="savval">'+f$(solS)+'</span></div><div class="savtrack"><div class="savfill sf-u" id="sf-s" data-w="'+(solS/maxS*100).toFixed(1)+'"></div></div></div>';
+  savHtml+='</div>';
+  sv.innerHTML=savHtml;
   rb.appendChild(sv);
   setTimeout(()=>{['sf-d','sf-t','sf-s'].forEach(id=>{const e=$(id);if(e)e.style.width=e.dataset.w+'%';});},400);
 
@@ -1017,6 +1016,39 @@ function render(d){
 
   // SOURCES
   if(d.master_source_list){
-    const se=document.createElement('div');se.className='rsec an a6';
-    const rows=Object.entries(d.master_source_list).map(([k,v])=>`<div class="sri"><span>${k.replace(/_/g,' ').toUpperCase()}</span><br>${v}</div>`).join('');
-    se.innerHTML=`<button class="src-btn" onclick="const w=this.nextElementSibling;w.classList.toggle('on');this.textContent=w.classList.contains('on')?'▲ Hide citations':'▼ Citations (${Object.keys(d.m
+    const se=document.createElement('div');
+    se.className='rsec an a6';
+    const cnt=Object.keys(d.master_source_list).length;
+    const rows=Object.entries(d.master_source_list)
+      .map(([k,v])=>'<div class="sri"><span>'+k.replace(/_/g,' ').toUpperCase()+'</span><br>'+v+'</div>')
+      .join('');
+    const btn=document.createElement('button');
+    btn.className='src-btn';
+    btn.textContent='\u25bc Citations ('+cnt+')';
+    btn.onclick=function(){
+      const w=this.nextElementSibling;
+      w.classList.toggle('on');
+      this.textContent=w.classList.contains('on')?'\u25b2 Hide citations':'\u25bc Citations ('+cnt+')';
+    };
+    const wrap=document.createElement('div');
+    wrap.className='src-wrap';
+    wrap.innerHTML=rows;
+    se.appendChild(btn);
+    se.appendChild(wrap);
+    rb.appendChild(se);
+  }
+
+  if(window.innerWidth<860)$('resPanel').scrollIntoView({behavior:'smooth'});
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+
+// ── KEEPALIVE: ping HF space every 4 min to prevent sleep (HF sleeps after 5 min idle)
+(function keepAlive(){
+  const ping=()=>fetch(HF_BASE+'/health',{method:'GET',mode:'cors',cache:'no-cache'}).catch(()=>{});
+  ping(); // pre-warm on page load
+  setInterval(ping, 4 * 60 * 1000); // ping every 4 minutes
+})();
+</script>
+</body>
+</html>
